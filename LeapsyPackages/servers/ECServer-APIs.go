@@ -50,19 +50,13 @@ func (eCAPIServer *ECAPIServer) start() {
 
 	enginePointer := gin.Default()
 
-	// enginePointer.GET(
-	// 	`/record`,
-	// 	func(ginContextPointer *gin.Context) {
-	// 		getRecordAPIHandler(eCAPIServer, ginContextPointer)
-	// 	},
-	// )
-
-	// enginePointer.GET(
-	// 	`/records/:year/:month/:day`,
-	// 	func(ginContextPointer *gin.Context) {
-	// 		getRecordsDailyAPIHandler(eCAPIServer, ginContextPointer)
-	// 	},
-	// )
+	// 驗證並取得所有 apps info
+	enginePointer.POST(
+		`/appsUpdate/postAllAppsInfo`,
+		func(ginContextPointer *gin.Context) {
+			postAllAppsInfoAPIHandler(eCAPIServer, ginContextPointer)
+		},
+	)
 
 	// 取得所有 apps info
 	// enginePointer.GET(
@@ -86,35 +80,6 @@ func (eCAPIServer *ECAPIServer) start() {
 	// 	`/appsUpdate/authentication`,
 	// 	func(ginContextPointer *gin.Context) {
 	// 		postAuthenticationAPIHandler(eCAPIServer, ginContextPointer)
-	// 	},
-	// )
-
-	// 驗證並取得所有 apps info
-	enginePointer.POST(
-		`/appsUpdate/postAllAppsInfo`,
-		func(ginContextPointer *gin.Context) {
-			postAllAppsInfoAPIHandler(eCAPIServer, ginContextPointer)
-		},
-	)
-
-	// enginePointer.GET(
-	// 	`/records/:year/:month`,
-	// 	func(ginContextPointer *gin.Context) {
-	// 		getRecordsMonthlyAPIHandler(eCAPIServer, ginContextPointer)
-	// 	},
-	// )
-
-	// enginePointer.GET(
-	// 	`/alerts/page/records/count/:pageCount/pages/count`,
-	// 	func(ginContextPointer *gin.Context) {
-	// 		getAlertsPagesPageCountAPIHandler(eCAPIServer, ginContextPointer)
-	// 	},
-	// )
-
-	// enginePointer.GET(
-	// 	`/alerts/pages/:pageNumber/count/:pageCount`,
-	// 	func(ginContextPointer *gin.Context) {
-	// 		getAlertsPageNumberPageCountAPIHandler(eCAPIServer, ginContextPointer)
 	// 	},
 	// )
 
