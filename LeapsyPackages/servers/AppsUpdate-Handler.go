@@ -78,6 +78,7 @@ func postAllAppsInfoAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.
 			// 查資料庫
 			result := mongoDB.FindAllAppsInfoByProjectNameAndAppName()
 
+			fmt.Printf("找到appsInfo結果 %d個", len(result))
 			// 包成前端格式
 			myResult := model.AppsInfoResponse{
 				IsSuccess: true,
@@ -105,7 +106,7 @@ func postAllAppsInfoAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.
 			)
 		} else {
 			//密碼錯誤
-			fmt.Println("取參數錯誤,錯誤訊息:bindJSONError=", bindJSONError, ",bindURIError=", bindURIError)
+			fmt.Println("密碼錯誤")
 
 			// 包成回給前端的格式
 			myResult := model.AppsInfoResponse{
@@ -174,11 +175,29 @@ func postAllAppsInfoAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.
 
 func checkPassword(userID string, userPassword string) (result bool) {
 
-	// 愈設帳號
-	if userID == "default" && userPassword == "default" {
+	// 搜尋帳號比對密碼
+	allAccount := mongoDB.FindAllAccounts()
+
+	fmt.Printf("找到 %d 個 %+v\n", len(allAccount), allAccount)
+
+	account := mongoDB.FindAccountByUserID(userID)
+
+	fmt.Printf("找到 %d 個\n", len(account))
+
+	//若有找到結果
+	if 1 > len(account) {
+		fmt.Printf("找不到帳號\n")
 		return true
 	} else {
-		return false
+
+		// 密碼正確
+		if userPassword == account[0].UserPassword {
+			fmt.Printf("驗證密碼正確 %+v \n", account)
+			return true
+		} else {
+			fmt.Printf("驗證密碼錯誤 %+v \n", account)
+			return false
+		}
 	}
 
 }

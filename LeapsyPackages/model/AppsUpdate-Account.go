@@ -8,7 +8,6 @@ package model
 type Account struct {
 	UserID       string // 使用者登入帳號
 	UserPassword string // 使用者登入密碼
-
 }
 
 // PrimitiveM - 轉成primitive.M

@@ -33,6 +33,8 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 
 		hourlyRWMutex.RLock() // 讀鎖
 
+		fmt.Printf("～～～～連線資料庫:%s與資料表：%s \n", mongoDB.GetConfigValueOrPanic(`database`), mongoDB.GetConfigValueOrPanic(`appsInfo-table`))
+
 		// 查找紀錄
 		cursor, findError := mongoClientPointer.
 			Database(mongoDB.GetConfigValueOrPanic(`database`)).
@@ -43,7 +45,7 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 				opts...,
 			)
 
-		hourlyRWMutex.RUnlock() // 讀解鎖
+		// hourlyRWMutex.RUnlock() // 讀解鎖
 
 		// log 紀錄有查詢動作
 		logings.SendLog(

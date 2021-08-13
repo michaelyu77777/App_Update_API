@@ -131,7 +131,7 @@ func (mongoDB *MongoDB) FindAllAccounts() (results []model.Account) {
 	// 取得警報紀錄
 	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
 
-	results = mongoDB.findAccounts(bson.M{}, nil)
+	results = mongoDB.findAccounts(bson.M{})
 
 	return // 回傳
 }
@@ -141,7 +141,7 @@ func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []model.Acco
 	// 取得警報紀錄
 	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
 
-	results = mongoDB.findAccounts(bson.M{`userID`: userID}, nil)
+	results = mongoDB.findAccounts(bson.M{`userID`: userID})
 
 	return // 回傳
 }
@@ -214,7 +214,6 @@ func (mongoDB *MongoDB) findOneAndUpdateAccount(
 						opts...,
 					)
 			*/
-
 
 		findOneAndUpdateError := singleResultPointer.Err() // 更添錯誤
 
