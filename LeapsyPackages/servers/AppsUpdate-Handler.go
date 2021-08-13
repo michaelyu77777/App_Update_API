@@ -187,7 +187,7 @@ func checkPassword(userID string, userPassword string) (result bool) {
 	//若有找到結果
 	if 1 > len(account) {
 		fmt.Printf("找不到帳號\n")
-		return true
+		return false
 	} else {
 
 		// 密碼正確
