@@ -18,7 +18,7 @@ import (
  * @param  *ECAPIServer eCAPIServer 環控API伺服器指標
  * @param  *gin.Context ginContextPointer  gin Context 指標
  */
-func getRecordsDailyAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.Context) {
+func getRecordsDailyAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	type Parameters struct {
 		Year  int `uri:"year" json:"year"`
@@ -36,8 +36,8 @@ func getRecordsDailyAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.
 		append(
 			network.GetAliasAddressPair(
 				fmt.Sprintf(`%s:%d`,
-					eCAPIServer.GetConfigValueOrPanic(`host`),
-					eCAPIServer.GetConfigPositiveIntValueOrPanic(`port`),
+					apiServer.GetConfigValueOrPanic(`host`),
+					apiServer.GetConfigPositiveIntValueOrPanic(`port`),
 				),
 			),
 			ginContextPointer.ClientIP(),

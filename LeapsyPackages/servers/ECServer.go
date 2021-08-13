@@ -15,14 +15,14 @@ func StartECServer() {
 	go logings.StartLogging()
 
 	var (
-		eCAPIServer ECAPIServer // 環控API伺服器
+		apiServer APIServer // 環控API伺服器
 		// ecsDB               databases.ECSDB      // 來源資料庫
 		// ecsAlertDB          databases.ECSAlertDB // 警報來源資料庫
 		periodicallyMongoDB databases.MongoDB // 記錄用資料庫
 	)
 
 	defer func() {
-		eCAPIServer.stop()                           // 結束環控API伺服器
+		apiServer.stop()                           // 結束環控API伺服器
 		stopPeriodicallyRecord(&periodicallyMongoDB) // 結束周期性記錄
 		StopECServer()                               // 結束環控伺服器
 	}()
@@ -34,7 +34,7 @@ func StartECServer() {
 		0,
 	)
 
-	go eCAPIServer.start() // 啟動環控API伺服器
+	go apiServer.start() // 啟動環控API伺服器
 
 	startPeriodicallyRecord(&periodicallyMongoDB) // 開始週期性記錄
 

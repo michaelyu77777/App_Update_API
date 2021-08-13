@@ -15,8 +15,8 @@ import (
 	"leapsy.com/packages/network"
 )
 
-// ECAPIServer - 環控API伺服器
-type ECAPIServer struct {
+// APIServer - 環控API伺服器
+type APIServer struct {
 	server *http.Server // 伺服器指標
 }
 
@@ -25,8 +25,8 @@ type ECAPIServer struct {
  * @param  string key  關鍵字
  * @return string 設定資料區塊下關鍵字對應的值
  */
-func (eCAPIServer *ECAPIServer) GetConfigValueOrPanic(key string) string {
-	return configurations.GetConfigValueOrPanic(reflect.TypeOf(*eCAPIServer).String(), key) // 回傳取得的設定檔區塊下關鍵字對應的值
+func (apiServer *APIServer) GetConfigValueOrPanic(key string) string {
+	return configurations.GetConfigValueOrPanic(reflect.TypeOf(*apiServer).String(), key) // 回傳取得的設定檔區塊下關鍵字對應的值
 }
 
 // GetConfigPositiveIntValueOrPanic - 取得設定整數值否則結束程式
@@ -34,16 +34,16 @@ func (eCAPIServer *ECAPIServer) GetConfigValueOrPanic(key string) string {
  * @param  string key  關鍵字
  * @return int 設定資料區塊下關鍵字對應的整數值
  */
-func (eCAPIServer *ECAPIServer) GetConfigPositiveIntValueOrPanic(key string) int {
-	return configurations.GetConfigPositiveIntValueOrPanic(reflect.TypeOf(*eCAPIServer).String(), key) // 回傳取得的設定檔區塊下關鍵字對應的值
+func (apiServer *APIServer) GetConfigPositiveIntValueOrPanic(key string) int {
+	return configurations.GetConfigPositiveIntValueOrPanic(reflect.TypeOf(*apiServer).String(), key) // 回傳取得的設定檔區塊下關鍵字對應的值
 }
 
 // start - 啟動環控API伺服器
-func (eCAPIServer *ECAPIServer) start() {
+func (apiServer *APIServer) start() {
 
 	address := fmt.Sprintf(`%s:%d`,
-		eCAPIServer.GetConfigValueOrPanic(`host`),
-		eCAPIServer.GetConfigPositiveIntValueOrPanic(`port`),
+		apiServer.GetConfigValueOrPanic(`host`),
+		apiServer.GetConfigPositiveIntValueOrPanic(`port`),
 	) // 預設主機
 
 	network.SetAddressAlias(address, `軟體更新API伺服器`) // 設定預設主機別名
@@ -54,7 +54,7 @@ func (eCAPIServer *ECAPIServer) start() {
 	enginePointer.POST(
 		`/appsUpdate/postAllAppsInfo`,
 		func(ginContextPointer *gin.Context) {
-			postAllAppsInfoAPIHandler(eCAPIServer, ginContextPointer)
+			postAllAppsInfoAPIHandler(apiServer, ginContextPointer)
 		},
 	)
 
@@ -63,7 +63,7 @@ func (eCAPIServer *ECAPIServer) start() {
 	// 	//`/appsUpdate/appsInfo/all`,
 	// 	`/appsUpdate/allAppsInfo`,
 	// 	func(ginContextPointer *gin.Context) {
-	// 		getAllAppsInfoAPIHandler(eCAPIServer, ginContextPointer)
+	// 		getAllAppsInfoAPIHandler(APIServer, ginContextPointer)
 	// 	},
 	// )
 
@@ -71,7 +71,7 @@ func (eCAPIServer *ECAPIServer) start() {
 	// enginePointer.GET(
 	// 	`/appsUpdate/appsInfo/:projectName/:appName`,
 	// 	func(ginContextPointer *gin.Context) {
-	// 		getAppsInfoAPIHandler(eCAPIServer, ginContextPointer)
+	// 		getAppsInfoAPIHandler(APIServer, ginContextPointer)
 	// 	},
 	// )
 
@@ -79,19 +79,19 @@ func (eCAPIServer *ECAPIServer) start() {
 	// enginePointer.POST(
 	// 	`/appsUpdate/authentication`,
 	// 	func(ginContextPointer *gin.Context) {
-	// 		postAuthenticationAPIHandler(eCAPIServer, ginContextPointer)
+	// 		postAuthenticationAPIHandler(APIServer, ginContextPointer)
 	// 	},
 	// )
 
 	// enginePointer.PUT(
 	// 	`/alerts/:alertEventID`,
 	// 	func(ginContextPointer *gin.Context) {
-	// 		putAlertAPIHandler(eCAPIServer, ginContextPointer)
+	// 		putAlertAPIHandler(APIServer, ginContextPointer)
 	// 	},
 	// )
 
 	apiServerPointer := &http.Server{Addr: address, Handler: enginePointer} // 設定伺服器
-	eCAPIServer.server = apiServerPointer                                   // 儲存伺服器指標
+	apiServer.server = apiServerPointer                                     // 儲存伺服器指標
 
 	var apiServerPtrListenAndServeError error // 伺服器啟動錯誤
 
@@ -111,14 +111,14 @@ func (eCAPIServer *ECAPIServer) start() {
 }
 
 // stop - 結束環控API伺服器
-func (eCAPIServer *ECAPIServer) stop() {
+func (apiServer *APIServer) stop() {
 
 	address := fmt.Sprintf(`%s:%d`,
-		eCAPIServer.GetConfigValueOrPanic(`host`),
-		eCAPIServer.GetConfigPositiveIntValueOrPanic(`port`),
+		apiServer.GetConfigValueOrPanic(`host`),
+		apiServer.GetConfigPositiveIntValueOrPanic(`port`),
 	) // 預設主機
 
-	if nil == eCAPIServer || nil == eCAPIServer.server {
+	if nil == apiServer || nil == apiServer.server {
 
 		logings.SendLog(
 			[]string{`%s %s 結束`},
@@ -130,7 +130,7 @@ func (eCAPIServer *ECAPIServer) stop() {
 		return
 	}
 
-	eCAPIServerServerShutdownError := eCAPIServer.server.Shutdown(context.TODO()) // 結束伺服器
+	eCAPIServerServerShutdownError := apiServer.server.Shutdown(context.TODO()) // 結束伺服器
 
 	logings.SendLog(
 		[]string{`%s %s 結束`},

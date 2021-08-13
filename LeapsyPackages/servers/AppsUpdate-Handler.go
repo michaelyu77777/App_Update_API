@@ -13,7 +13,7 @@ import (
 )
 
 // 驗證並取得所有apps info
-func postAllAppsInfoAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.Context) {
+func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	// 客戶端參數格式
 	type Parameters struct {
@@ -40,8 +40,8 @@ func postAllAppsInfoAPIHandler(eCAPIServer *ECAPIServer, ginContextPointer *gin.
 		append(
 			network.GetAliasAddressPair(
 				fmt.Sprintf(`%s:%d`,
-					eCAPIServer.GetConfigValueOrPanic(`host`),
-					eCAPIServer.GetConfigPositiveIntValueOrPanic(`port`),
+					apiServer.GetConfigValueOrPanic(`host`),
+					apiServer.GetConfigPositiveIntValueOrPanic(`port`),
 				),
 			),
 			ginContextPointer.ClientIP(),
