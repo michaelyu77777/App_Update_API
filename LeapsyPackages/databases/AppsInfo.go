@@ -14,6 +14,31 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// 尋找所有 apps info
+func (mongoDB *MongoDB) FindAllAppsInfoByProjectNameAndAppName() (results []model.AppsInfo) {
+
+	// 回傳結果
+	results = mongoDB.findAppsInfo(
+		bson.M{},
+	)
+
+	return // 回傳
+}
+
+// 尋找符合的專案名稱,app名稱
+func (mongoDB *MongoDB) FindAppsInfoByProjectNameAndAppName(projectName string, appName string) (results []model.AppsInfo) {
+
+	// 回傳結果
+	results = mongoDB.findAppsInfo(
+		bson.M{
+			"projectName": projectName,
+			"appName":     appName,
+		},
+	)
+
+	return // 回傳
+}
+
 // 查找[資料庫-軟體更新]appsinfo(軟體資訊)
 func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOptions) (results []model.AppsInfo) {
 
@@ -32,8 +57,6 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
 
 		hourlyRWMutex.RLock() // 讀鎖
-
-		fmt.Printf("～～～～連線資料庫:%s與資料表：%s \n", mongoDB.GetConfigValueOrPanic(`database`), mongoDB.GetConfigValueOrPanic(`appsInfo-table`))
 
 		// 查找紀錄
 		cursor, findError := mongoClientPointer.
@@ -107,55 +130,6 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 		)
 
 	}
-
-	return // 回傳
-}
-
-// 尋找所有 apps info
-func (mongoDB *MongoDB) FindAllAppsInfoByProjectNameAndAppName() (results []model.AppsInfo) {
-
-	// if !lowerTime.IsZero() && !upperTime.IsZero() { //若上下限時間不為零時間
-
-	// var (
-	// 	greaterThanKeyword, lessThanKeyword string // 比較關鍵字
-	// )
-
-	// if !isLowerTimeIncluded { // 若不包含下限時間
-	// 	greaterThanKeyword = greaterThanConstString // >
-	// } else {
-	// 	greaterThanKeyword = greaterThanEqualToConstString // >=
-	// }
-
-	// if !isUpperTimeIncluded { // 若不包含上限時間
-	// 	lessThanKeyword = lessThanConstString // <
-	// } else {
-	// 	lessThanKeyword = lessThanEqualToConstString // <=
-	// }
-
-	// 回傳結果
-	results = mongoDB.findAppsInfo(
-		bson.M{},
-	)
-
-	// }
-
-	return // 回傳
-}
-
-// 尋找符合的專案名稱,app名稱
-func (mongoDB *MongoDB) FindAppsInfoByProjectNameAndAppName(projectName string, appName string) (results []model.AppsInfo) {
-
-	fmt.Println("測試中：取得參數projectName=", projectName, "appName=", appName)
-
-	// 回傳結果
-	results = mongoDB.findAppsInfo(
-		bson.M{
-			"projectName": projectName,
-			"appName":     appName,
-		},
-	)
-
-	// }
 
 	return // 回傳
 }

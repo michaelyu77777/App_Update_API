@@ -15,6 +15,30 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// FindAllAlertRecords - 取得所有帳號
+/**
+ * @return results []model.Account 取得結果
+ */
+func (mongoDB *MongoDB) FindAllAccounts() (results []model.Account) {
+
+	// 取得警報紀錄
+	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
+
+	results = mongoDB.findAccounts(bson.M{})
+
+	return // 回傳
+}
+
+func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []model.Account) {
+
+	// 取得警報紀錄
+	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
+
+	results = mongoDB.findAccounts(bson.M{`userID`: userID})
+
+	return // 回傳
+}
+
 // findAlertRecords - 查找帳號
 /**
  * @param bson.M filter 過濾器
@@ -122,29 +146,7 @@ func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOp
 	return // 回傳
 }
 
-// FindAllAlertRecords - 取得所有帳號
-/**
- * @return results []model.Account 取得結果
- */
-func (mongoDB *MongoDB) FindAllAccounts() (results []model.Account) {
-
-	// 取得警報紀錄
-	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
-
-	results = mongoDB.findAccounts(bson.M{})
-
-	return // 回傳
-}
-
-func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []model.Account) {
-
-	// 取得警報紀錄
-	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
-
-	results = mongoDB.findAccounts(bson.M{`userID`: userID})
-
-	return // 回傳
-}
+/*** 以下為備用的範例-目前沒用到**/
 
 // findOneAndUpdateAccountSET - 提供更新部分欄位
 /**
