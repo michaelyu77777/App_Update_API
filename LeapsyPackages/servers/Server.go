@@ -8,11 +8,10 @@ import (
 type Server struct {
 }
 
-// var nameOfServer = `軟體更新API伺服器 `
-
 // StartServer - 啟動伺服器
 func StartServer() {
 
+	// log
 	go logings.StartLogging()
 
 	var (
@@ -22,12 +21,14 @@ func StartServer() {
 		// periodicallyMongoDB databases.MongoDB // 記錄用資料庫
 	)
 
+	// defer: StartServer()整個函數結束之前，執行此函數
 	defer func() {
 		apiServer.stop() // 結束API伺服器
-		StopServer()     // 結束伺服器
+		StopServer()     // 結束整個伺服器
 		// stopPeriodicallyRecord(&periodicallyMongoDB) // 結束周期性記錄
 	}()
 
+	// log
 	logings.SendLog(
 		[]string{`啟動 ` + apiServer.GetConfigValueOrPanic("nameOfServer") + ` `},
 		[]interface{}{},
@@ -35,10 +36,12 @@ func StartServer() {
 		0,
 	)
 
-	go apiServer.start() // 啟動環控API伺服器
+	// 啟動API伺服器
+	go apiServer.start()
 	// startPeriodicallyRecord(&periodicallyMongoDB) // 開始週期性記錄
 
-	select {} // (主線無限回圈)
+	// (主線無限回圈)
+	select {}
 
 }
 
