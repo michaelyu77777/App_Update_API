@@ -110,7 +110,7 @@ func (apiServer *APIServer) start() {
 
 }
 
-// stop - 結束環控API伺服器
+// stop - 結束API伺服器
 func (apiServer *APIServer) stop() {
 
 	address := fmt.Sprintf(`%s:%d`,
