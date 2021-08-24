@@ -15,7 +15,7 @@ import (
 )
 
 // 尋找所有 apps info
-func (mongoDB *MongoDB) FindAllAppsInfoByProjectNameAndAppName() (results []model.AppsInfo) {
+func (mongoDB *MongoDB) FindAllAppsInfo() (results []model.AppsInfo) {
 
 	// 回傳結果
 	results = mongoDB.findAppsInfo(

@@ -76,7 +76,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 		if checkPassword(parametersUserID, parametersUserPassword) {
 
 			// 查資料庫
-			result := mongoDB.FindAllAppsInfoByProjectNameAndAppName()
+			result := mongoDB.FindAllAppsInfo()
 
 			fmt.Printf("找到appsInfo結果 %d個", len(result))
 			// 包成前端格式

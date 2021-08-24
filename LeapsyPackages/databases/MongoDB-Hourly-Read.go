@@ -389,7 +389,7 @@ func (mongoDB *MongoDB) FindHourlyRecordsBetweenTimes(
 }
 
 // // 尋找所有 apps info
-// func (mongoDB *MongoDB) FindAllAppsInfoByProjectNameAndAppName() (results []records.AppsInfo) {
+// func (mongoDB *MongoDB) FindAllAppsInfo() (results []records.AppsInfo) {
 
 // 	// if !lowerTime.IsZero() && !upperTime.IsZero() { //若上下限時間不為零時間
 
