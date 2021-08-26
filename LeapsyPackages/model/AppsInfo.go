@@ -5,8 +5,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// 軟體資訊
-type AppsInfo struct {
+// 放 DB 與 Respone Client 共同會用到的參數
+type AppsInfoCommonStruct struct {
 	AppNameCht string `json:"appNameCht"` //軟體名稱 正體
 	AppNameChs string `json:"appNameChs"` //軟體名稱 簡體
 	AppNameEng string `json:"appNameEng"` //軟體名稱 英文
@@ -16,7 +16,6 @@ type AppsInfo struct {
 	LastVersionCode int    `json:"lastVersionCode"` //最新版本號
 	LastVersionName string `json:"lastVersionName"` //最新版本名
 	PackageName     string `json:"packageName"`     //封包名稱
-	DownloadPath    string `json:"downloadPath"`    //下載APK網址
 	PublishDate     string `json:"publishDate"`     //發佈日期
 
 	ChangeDetailCht string `json:"changeDetailCht"` //更新內容 詳述 正
@@ -30,6 +29,22 @@ type AppsInfo struct {
 	ChangeBriefEng string `json:"changeBriefEng"` //更新內容 簡述 英
 	ChangeBriefJpn string `json:"changeBriefJpn"` //更新內容 簡述 日
 	ChangeBriefKor string `json:"changeBriefKor"` //更新內容 簡述 韓
+
+}
+
+// 軟體資訊(DB用)
+type AppsInfo struct {
+	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
+
+	ApkDirectoryName string `json:"apkDirectoryName"` // 存放APK資料夾名稱
+	ApkFileName      string `json:"apkFileName"`      // APK檔案名稱
+}
+
+// 軟體資訊(Response client用)
+type AppsInfoWithDownloadPath struct {
+	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
+
+	DownloadPath string `json:"downloadPath"` // 組合出下載APK網址
 }
 
 // type AppsInfo struct {
@@ -42,16 +57,11 @@ type AppsInfo struct {
 
 // 包成回給前端<取AppsInfo格式>
 type AppsInfoResponse struct {
-	IsSuccess bool       `json:"isSuccess"` //錯誤代碼
-	Results   string     `json:"results"`   //錯誤訊息
-	Data      []AppsInfo `json:"data"`      //查詢結果
+	IsSuccess bool   `json:"isSuccess"` //錯誤代碼
+	Results   string `json:"results"`   //錯誤訊息
+	// Data      []AppsInfo `json:"data"`      //查詢結果
+	Data []AppsInfoWithDownloadPath `json:"data"` //查詢結果
 }
-
-// type AppsInfoResponse struct {
-// 	Code    string     `json:"code"`    //錯誤代碼
-// 	Message string     `json:"message"` //錯誤訊息
-// 	Data    []AppsInfo `json:"data"`    //查詢結果
-// }
 
 // 回給前端<一般格式>
 type APIResponse struct {
@@ -75,7 +85,6 @@ func (appsInfo AppsInfo) PrimitiveM() (returnPrimitiveM primitive.M) {
 		`lastVersionCode`: appsInfo.LastVersionCode,
 		`lastVersionName`: appsInfo.LastVersionName,
 		`packageName`:     appsInfo.PackageName,
-		`downloadPath`:    appsInfo.DownloadPath,
 		`publishDate`:     appsInfo.PublishDate,
 
 		`changeDetailCht`: appsInfo.ChangeDetailCht,
@@ -89,6 +98,9 @@ func (appsInfo AppsInfo) PrimitiveM() (returnPrimitiveM primitive.M) {
 		`changeBriefEng`: appsInfo.ChangeBriefEng,
 		`changeBriefJpn`: appsInfo.ChangeBriefJpn,
 		`changeBriefKor`: appsInfo.ChangeBriefKor,
+
+		`apkDirectoryName`: appsInfo.ApkDirectoryName, // 存放APK資料夾名稱
+		`apkFileName`:      appsInfo.ApkFileName,      // APK檔案名稱
 	}
 
 	return

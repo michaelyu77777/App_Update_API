@@ -1,6 +1,7 @@
 package servers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -75,15 +76,61 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 		// 密碼正確
 		if checkPassword(parametersUserID, parametersUserPassword) {
 
-			// 查資料庫
+			// 找所有AppsInfo
 			result := mongoDB.FindAllAppsInfo()
 
-			fmt.Printf("找到appsInfo結果 %d個", len(result))
+			// Response Struct (組出DownloadPath,去掉不需要的欄位)
+			var resultWithDownloadPath []model.AppsInfoWithDownloadPath
+
+			// 複製共用餐數到 Response Struct (依照原本順序)
+			if jsonBytes, jsonMarshalError := json.Marshal(result); jsonMarshalError == nil {
+
+				if jsonUnmarshalError := json.Unmarshal(jsonBytes, &resultWithDownloadPath); jsonUnmarshalError != nil {
+
+					logings.SendLog(
+						[]string{`將JSON字串 %s 轉成 物件 %+v `},
+						[]interface{}{string(jsonBytes), resultWithDownloadPath},
+						jsonUnmarshalError,
+						logrus.PanicLevel,
+					)
+
+				}
+
+			} else {
+
+				logings.SendLog(
+					[]string{`將物件 %+v 轉成 JSON字串 %s `},
+					[]interface{}{result, string(jsonBytes)},
+					jsonMarshalError,
+					logrus.PanicLevel,
+				)
+
+			}
+
+			fmt.Printf("檢測點：DB結果 %+v", result)
+			fmt.Printf("檢測點：複製的結果 %+v", resultWithDownloadPath)
+
+			// 取APK下載的設定值
+			// apkDownloadURLBase := "http://192.168.1.190:63997/appUpdate/download/"
+			apkDownloadHost := apiServer.GetConfigValueOrPanic(`apkDownloadHost`)
+			apkDownloadPort := apiServer.GetConfigValueOrPanic(`apkDownloadPort`)
+			apkDownloadURLBase := apiServer.GetConfigValueOrPanic(`apkDownloadURLBase`)
+
+			for i, _ := range resultWithDownloadPath {
+
+				// 組出APK下載網址
+				downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].ApkDirectoryName //downloadPath
+				resultWithDownloadPath[i].DownloadPath = downloadPath                                                                 //寫回array
+
+				fmt.Printf("組出downloadPath= %s", downloadPath)
+			}
+
+			// fmt.Printf("找到appsInfo結果 %d個", len(result))
 			// 包成前端格式
 			myResult := model.AppsInfoResponse{
 				IsSuccess: true,
 				Results:   "",
-				Data:      result,
+				Data:      resultWithDownloadPath,
 			}
 			// myResult := model.AppsInfoResponse{
 			// 	Code:    "200",
