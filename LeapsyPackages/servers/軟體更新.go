@@ -107,8 +107,8 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 			}
 
-			fmt.Printf("檢測點：DB結果 %+v", result)
-			fmt.Printf("檢測點：複製的結果 %+v", resultWithDownloadPath)
+			// fmt.Printf("檢測點：DB結果 %+v", result)
+			// fmt.Printf("檢測點：複製的結果 %+v", resultWithDownloadPath)
 
 			// 取APK下載的設定值
 			// apkDownloadURLBase := "http://192.168.1.190:63997/appUpdate/download/"
@@ -132,11 +132,6 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 				Results:   "",
 				Data:      resultWithDownloadPath,
 			}
-			// myResult := model.AppsInfoResponse{
-			// 	Code:    "200",
-			// 	Message: "",
-			// 	Data:    result,
-			// }
 
 			// 回應給前端
 			ginContextPointer.JSON(http.StatusOK, myResult)
