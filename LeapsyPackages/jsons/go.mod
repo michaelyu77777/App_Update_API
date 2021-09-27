@@ -1,4 +1,4 @@
-module network
+module jsons
 
 go 1.14
 

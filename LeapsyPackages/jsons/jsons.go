@@ -3,7 +3,7 @@ package jsons
 import (
 	"encoding/json"
 
-	"../logings"
+	"leapsy.com/packages/logings"
 )
 
 var (

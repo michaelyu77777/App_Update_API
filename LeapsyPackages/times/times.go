@@ -1,7 +1,7 @@
 package times
 
 import (
-	"errors"
+	// "errors"
 	"time"
 
 	"leapsy.com/packages/logings"
@@ -21,25 +21,256 @@ func IsSecond(dateTime time.Time) bool {
  * @param  time.Time dateTime  時間
  * @return time.Time lower 下限小時
  * @return time.Time upper 上限小時
+//  */
+// func GetHourlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+
+// 	duration := time.Hour
+
+// 	if IsHour(dateTime) {
+// 		low = dateTime.Add(-duration)
+// 		upper = dateTime
+// 	} else {
+// 		low = ConvertToHourlyDateTime(dateTime)
+// 		upper = low.Add(duration)
+// 	}
+
+// 	low = time.Date(low.Year(), low.Month(), low.Day(), low.Hour(), 0, 0, 0, time.Local)
+// 	upper = time.Date(upper.Year(), upper.Month(), upper.Day(), upper.Hour(), 0, 0, 0, time.Local)
+
+// 	logings.SendLog(
+// 		[]string{`取得時間 %+v 下限小時 %+v 上限小時 %+v`},
+// 		[]interface{}{dateTime, low, upper},
+// 		nil,
+// 		0,
+// 	)
+
+// 	return
+// }
+
+// IsHour - 判斷時間是否為整點
+/**
+ * @param  time.Time dateTime  時間
+ * @return bool 判斷是否為整點
+ */
+// func IsHour(dateTime time.Time) bool {
+// 	return dateTime.Minute() == 0 && IsSecond(dateTime) // 分秒微秒為零
+// }
+
+// ConvertToHourlyDateTime - 轉成整點時間
+/**
+ * @param time.Time dateTime 時間
+ * @return time.Time returnHourlyDateTime 回傳小時時間
+ */
+// func ConvertToHourlyDateTime(dateTime time.Time) (returnHourlyDateTime time.Time) {
+
+// 	formatSlice := `將時間 %+v 轉成整點時間`
+// 	defaultArgs := []interface{}{dateTime}
+
+// 	if !dateTime.IsZero() {
+
+// 		if !IsHour(dateTime) { // 若非整點時間
+// 			// 修改時間
+// 			returnHourlyDateTime = time.Date(dateTime.Year(), dateTime.Month(), dateTime.Day(), dateTime.Hour(), 0, 0, 0, time.Local)
+// 		} else {
+// 			returnHourlyDateTime = dateTime // 回傳
+// 		}
+
+// 		logings.SendLog(
+// 			[]string{formatSlice + ` %+v `},
+// 			append(defaultArgs, returnHourlyDateTime),
+// 			nil,
+// 			0,
+// 		)
+
+// 	} else {
+
+// 		logings.SendLog(
+// 			[]string{formatSlice},
+// 			defaultArgs,
+// 			errors.New(timeIsZeroConstString),
+// 			0,
+// 		)
+
+// 	}
+
+// 	return
+// }
+
+// GetDailyBounds - 取得時間上下限日
+/**
+ * @param  time.Time dateTime  時間
+ * @return  time.Time lower  下限日
+ * @return  time.Time upper  上限日
+ */
+// func GetDailyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+
+// 	if IsDay(dateTime) { // 若為整日
+// 		low = dateTime.AddDate(0, 0, -1) // 昨日
+// 		upper = dateTime                 // 今日
+// 	} else {
+// 		low = ConvertToDailyDateTime(dateTime) // 今日
+// 		upper = low.AddDate(0, 0, 1)           // 明日
+// 	}
+
+// 	logings.SendLog(
+// 		[]string{`取得時間 %+v 下限日 %+v 上限日 %+v`},
+// 		[]interface{}{dateTime, low, upper},
+// 		nil,
+// 		0,
+// 	)
+
+// 	return // 回傳
+// }
+
+// IsDay - 判斷是否為整日
+/**
+ * @param  time.Time dateTime  時間
+ * @return  bool 判斷是否為整日
+ */
+// func IsDay(dateTime time.Time) bool {
+// 	return dateTime.Hour() == 0 && IsHour(dateTime) // 時分秒微秒為零
+// }
+
+// ConvertToDailyDateTime - 轉成整日時間
+/**
+ * @param time.Time dateTime 時間
+ * @return time.Time returnDailyDateTime 回傳小時時間
+ */
+// func ConvertToDailyDateTime(dateTime time.Time) (returnDailyDateTime time.Time) {
+// 	formatSlice := `將時間 %+v 轉成整日時間`
+// 	defaultArgs := []interface{}{dateTime}
+
+// 	if !dateTime.IsZero() {
+
+// 		if !IsDay(dateTime) { // 若非整日時間
+// 			// 修改時間
+// 			returnDailyDateTime = time.Date(dateTime.Year(), dateTime.Month(), dateTime.Day(), 0, 0, 0, 0, time.Local)
+// 		} else {
+// 			returnDailyDateTime = dateTime // 回傳
+// 		}
+
+// 		logings.SendLog(
+// 			[]string{formatSlice + ` %+v `},
+// 			append(defaultArgs, returnDailyDateTime),
+// 			nil,
+// 			0,
+// 		)
+
+// 	} else {
+
+// 		logings.SendLog(
+// 			[]string{formatSlice},
+// 			defaultArgs,
+// 			errors.New(timeIsZeroConstString),
+// 			0,
+// 		)
+
+// 	}
+
+// 	return
+// }
+
+// GetMonthlyBounds - 取得時間上下限月
+/**
+ * @param  time.Time dateTime  時間
+ * @return  time.Time lower  下限月
+ * @return  time.Time upper  上限月
+ */
+// func GetMonthlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+
+// 	if IsMonth(dateTime) { // 若為整月
+// 		low = dateTime.AddDate(0, -1, 0) // 上個月
+// 		upper = dateTime                 // 這個月
+// 	} else {
+// 		low = ConvertToMonthlyDateTime(dateTime) // 這個月
+// 		upper = low.AddDate(0, 1, 0)             // 下個月
+// 	}
+
+// 	logings.SendLog(
+// 		[]string{`取得時間 %+v 下限月 %+v 上限月 %+v`},
+// 		[]interface{}{dateTime, low, upper},
+// 		nil,
+// 		0,
+// 	)
+
+// 	return // 回傳
+// }
+
+// IsMonth - 判斷是否為整月
+/**
+ * @param  time.Time dateTime  時間
+ * @return  bool 判斷是否為整月
+ */
+// func IsMonth(dateTime time.Time) bool {
+// 	// 日為一、時分秒微秒為零
+// 	return dateTime.Day() == 1 && IsDay(dateTime)
+// }
+
+// ConvertToMonthlyDateTime - 轉成整月時間
+/**
+ * @param time.Time dateTime 時間
+ * @return time.Time returnMonthlyDateTime 回傳小時時間
+ */
+// func ConvertToMonthlyDateTime(dateTime time.Time) (returnMonthlyDateTime time.Time) {
+// 	formatSlice := `將時間 %+v 轉成整月時間`
+// 	defaultArgs := []interface{}{dateTime}
+
+// 	if !dateTime.IsZero() {
+
+// 		if !IsMonth(dateTime) { // 若非整月時間
+// 			// 修改時間
+// 			returnMonthlyDateTime = time.Date(dateTime.Year(), dateTime.Month(), 1, 0, 0, 0, 0, time.Local)
+// 		} else {
+// 			returnMonthlyDateTime = dateTime // 回傳
+// 		}
+
+// 		logings.SendLog(
+// 			[]string{formatSlice + ` %+v `},
+// 			append(defaultArgs, returnMonthlyDateTime),
+// 			nil,
+// 			0,
+// 		)
+
+// 	} else {
+
+// 		logings.SendLog(
+// 			[]string{formatSlice},
+// 			defaultArgs,
+// 			errors.New(timeIsZeroConstString),
+// 			0,
+// 		)
+
+// 	}
+
+// 	return
+// }
+
+/**以下為APK下載合併進來的函示**/
+// IsMinute - 判斷時間是否為整分
+/**
+ * @param  time.Time dateTime  時間
+ * @return bool 判斷是否為整秒
+ */
+func IsMinute(dateTime time.Time) bool {
+	return dateTime.Local().Second() == 0 // 秒為零
+}
+
+// GetHourlyBounds - 取得時間上下限小時
+/**
+ * @param  time.Time dateTime  時間
+ * @return time.Time lower 下限小時
+ * @return time.Time upper 上限小時
  */
 func GetHourlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
 
-	duration := time.Hour
+	localDateTime := dateTime.Local()
 
-	if IsHour(dateTime) {
-		low = dateTime.Add(-duration)
-		upper = dateTime
-	} else {
-		low = ConvertToHourlyDateTime(dateTime)
-		upper = low.Add(duration)
-	}
-
-	low = time.Date(low.Year(), low.Month(), low.Day(), low.Hour(), 0, 0, 0, time.Local)
-	upper = time.Date(upper.Year(), upper.Month(), upper.Day(), upper.Hour(), 0, 0, 0, time.Local)
+	low = ConvertToHourlyDateTime(localDateTime)
+	upper = low.Add(time.Hour)
 
 	logings.SendLog(
 		[]string{`取得時間 %+v 下限小時 %+v 上限小時 %+v`},
-		[]interface{}{dateTime, low, upper},
+		[]interface{}{localDateTime, low, upper},
 		nil,
 		0,
 	)
@@ -53,7 +284,8 @@ func GetHourlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
  * @return bool 判斷是否為整點
  */
 func IsHour(dateTime time.Time) bool {
-	return dateTime.Minute() == 0 && IsSecond(dateTime) // 分秒微秒為零
+	localDateTime := dateTime.Local()
+	return localDateTime.Minute() == 0 && IsMinute(localDateTime) // 分秒為零
 }
 
 // ConvertToHourlyDateTime - 轉成整點時間
@@ -63,35 +295,16 @@ func IsHour(dateTime time.Time) bool {
  */
 func ConvertToHourlyDateTime(dateTime time.Time) (returnHourlyDateTime time.Time) {
 
-	formatSlice := `將時間 %+v 轉成整點時間`
-	defaultArgs := []interface{}{dateTime}
+	localDateTime := dateTime.Local()
 
-	if !dateTime.IsZero() {
+	returnHourlyDateTime = time.Date(localDateTime.Year(), localDateTime.Month(), localDateTime.Day(), localDateTime.Hour(), 0, 0, 0, time.Local)
 
-		if !IsHour(dateTime) { // 若非整點時間
-			// 修改時間
-			returnHourlyDateTime = time.Date(dateTime.Year(), dateTime.Month(), dateTime.Day(), dateTime.Hour(), 0, 0, 0, time.Local)
-		} else {
-			returnHourlyDateTime = dateTime // 回傳
-		}
-
-		logings.SendLog(
-			[]string{formatSlice + ` %+v `},
-			append(defaultArgs, returnHourlyDateTime),
-			nil,
-			0,
-		)
-
-	} else {
-
-		logings.SendLog(
-			[]string{formatSlice},
-			defaultArgs,
-			errors.New(timeIsZeroConstString),
-			0,
-		)
-
-	}
+	logings.SendLog(
+		[]string{`將時間 %+v 轉成整點時間 %+v `},
+		[]interface{}{localDateTime, returnHourlyDateTime},
+		nil,
+		0,
+	)
 
 	return
 }
@@ -102,73 +315,71 @@ func ConvertToHourlyDateTime(dateTime time.Time) (returnHourlyDateTime time.Time
  * @return  time.Time lower  下限日
  * @return  time.Time upper  上限日
  */
-func GetDailyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+// func GetDailyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
 
-	if IsDay(dateTime) { // 若為整日
-		low = dateTime.AddDate(0, 0, -1) // 昨日
-		upper = dateTime                 // 今日
-	} else {
-		low = ConvertToDailyDateTime(dateTime) // 今日
-		upper = low.AddDate(0, 0, 1)           // 明日
-	}
+// 	localDateTime := dateTime.Local()
 
-	logings.SendLog(
-		[]string{`取得時間 %+v 下限日 %+v 上限日 %+v`},
-		[]interface{}{dateTime, low, upper},
-		nil,
-		0,
-	)
+// 	low = ConvertToDailyDateTime(localDateTime) // 今日
+// 	upper = low.AddDate(0, 0, 1)                // 明日
 
-	return // 回傳
-}
+// 	logings.SendLog(
+// 		[]string{`取得時間 %+v 下限日 %+v 上限日 %+v`},
+// 		[]interface{}{localDateTime, low, upper},
+// 		nil,
+// 		0,
+// 	)
+
+// 	return // 回傳
+// }
 
 // IsDay - 判斷是否為整日
 /**
  * @param  time.Time dateTime  時間
  * @return  bool 判斷是否為整日
  */
-func IsDay(dateTime time.Time) bool {
-	return dateTime.Hour() == 0 && IsHour(dateTime) // 時分秒微秒為零
-}
+// func IsDay(dateTime time.Time) bool {
+
+// 	localDateTime := dateTime.Local()
+
+// 	return localDateTime.Hour() == GetStartOfficeHourOfDay() &&
+// 		localDateTime.Minute() == GetStartOfficeMinuteOfDay() &&
+// 		IsMinute(localDateTime) // 秒為零
+// }
 
 // ConvertToDailyDateTime - 轉成整日時間
 /**
  * @param time.Time dateTime 時間
  * @return time.Time returnDailyDateTime 回傳小時時間
  */
-func ConvertToDailyDateTime(dateTime time.Time) (returnDailyDateTime time.Time) {
-	formatSlice := `將時間 %+v 轉成整日時間`
-	defaultArgs := []interface{}{dateTime}
+// func ConvertToDailyDateTime(dateTime time.Time) (returnDailyDateTime time.Time) {
 
-	if !dateTime.IsZero() {
+// 	localDateTime := dateTime.Local()
 
-		if !IsDay(dateTime) { // 若非整日時間
-			// 修改時間
-			returnDailyDateTime = time.Date(dateTime.Year(), dateTime.Month(), dateTime.Day(), 0, 0, 0, 0, time.Local)
-		} else {
-			returnDailyDateTime = dateTime // 回傳
-		}
+// 	// 修改時間
+// 	returnDailyDateTime = time.Date(
+// 		localDateTime.Year(),
+// 		localDateTime.Month(),
+// 		localDateTime.Day(),
+// 		GetStartOfficeHourOfDay(),
+// 		GetStartOfficeMinuteOfDay(),
+// 		0,
+// 		0,
+// 		time.Local,
+// 	)
 
-		logings.SendLog(
-			[]string{formatSlice + ` %+v `},
-			append(defaultArgs, returnDailyDateTime),
-			nil,
-			0,
-		)
+// 	if !localDateTime.IsZero() && localDateTime.Before(returnDailyDateTime) {
+// 		returnDailyDateTime = returnDailyDateTime.AddDate(0, 0, -1)
+// 	}
 
-	} else {
+// 	logings.SendLog(
+// 		[]string{`將時間 %+v 轉成整日時間 %+v `},
+// 		[]interface{}{localDateTime, returnDailyDateTime},
+// 		nil,
+// 		0,
+// 	)
 
-		logings.SendLog(
-			[]string{formatSlice},
-			defaultArgs,
-			errors.New(timeIsZeroConstString),
-			0,
-		)
-
-	}
-
-	return
-}
+// 	return
+// }
 
 // GetMonthlyBounds - 取得時間上下限月
 /**
@@ -176,71 +387,90 @@ func ConvertToDailyDateTime(dateTime time.Time) (returnDailyDateTime time.Time) 
  * @return  time.Time lower  下限月
  * @return  time.Time upper  上限月
  */
-func GetMonthlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+// func GetMonthlyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
 
-	if IsMonth(dateTime) { // 若為整月
-		low = dateTime.AddDate(0, -1, 0) // 上個月
-		upper = dateTime                 // 這個月
-	} else {
-		low = ConvertToMonthlyDateTime(dateTime) // 這個月
-		upper = low.AddDate(0, 1, 0)             // 下個月
-	}
+// 	localDateTime := dateTime.Local()
 
-	logings.SendLog(
-		[]string{`取得時間 %+v 下限月 %+v 上限月 %+v`},
-		[]interface{}{dateTime, low, upper},
-		nil,
-		0,
-	)
+// 	low = ConvertToMonthlyDateTime(localDateTime) // 這個月
+// 	upper = low.AddDate(0, 1, 0)                  // 下個月
 
-	return // 回傳
-}
+// 	logings.SendLog(
+// 		[]string{`取得時間 %+v 下限月 %+v 上限月 %+v `},
+// 		[]interface{}{localDateTime, low, upper},
+// 		nil,
+// 		0,
+// 	)
+
+// 	return // 回傳
+// }
 
 // IsMonth - 判斷是否為整月
 /**
  * @param  time.Time dateTime  時間
  * @return  bool 判斷是否為整月
  */
-func IsMonth(dateTime time.Time) bool {
-	// 日為一、時分秒微秒為零
-	return dateTime.Day() == 1 && IsDay(dateTime)
-}
+// func IsMonth(dateTime time.Time) bool {
+// 	localDateTime := dateTime.Local()
+// 	// 日為一、時分為換日時分、秒為零
+// 	return localDateTime.Day() == 1 && IsDay(localDateTime)
+// }
 
 // ConvertToMonthlyDateTime - 轉成整月時間
 /**
  * @param time.Time dateTime 時間
  * @return time.Time returnMonthlyDateTime 回傳小時時間
  */
-func ConvertToMonthlyDateTime(dateTime time.Time) (returnMonthlyDateTime time.Time) {
-	formatSlice := `將時間 %+v 轉成整月時間`
-	defaultArgs := []interface{}{dateTime}
+// func ConvertToMonthlyDateTime(dateTime time.Time) (returnMonthlyDateTime time.Time) {
 
-	if !dateTime.IsZero() {
+// 	localDateTime := dateTime.Local()
 
-		if !IsMonth(dateTime) { // 若非整月時間
-			// 修改時間
-			returnMonthlyDateTime = time.Date(dateTime.Year(), dateTime.Month(), 1, 0, 0, 0, 0, time.Local)
-		} else {
-			returnMonthlyDateTime = dateTime // 回傳
-		}
+// 	// 修改時間
+// 	returnMonthlyDateTime = time.Date(
+// 		localDateTime.Year(),
+// 		localDateTime.Month(),
+// 		1,
+// 		GetStartOfficeHourOfDay(),
+// 		GetStartOfficeMinuteOfDay(),
+// 		0,
+// 		0,
+// 		time.Local,
+// 	)
 
-		logings.SendLog(
-			[]string{formatSlice + ` %+v `},
-			append(defaultArgs, returnMonthlyDateTime),
-			nil,
-			0,
-		)
+// 	if !localDateTime.IsZero() && localDateTime.Before(returnMonthlyDateTime) {
+// 		returnMonthlyDateTime = returnMonthlyDateTime.AddDate(0, -1, 0)
+// 	}
 
-	} else {
+// 	logings.SendLog(
+// 		[]string{`將時間 %+v 轉成整月時間 %+v `},
+// 		[]interface{}{localDateTime, returnMonthlyDateTime},
+// 		nil,
+// 		0,
+// 	)
 
-		logings.SendLog(
-			[]string{formatSlice},
-			defaultArgs,
-			errors.New(timeIsZeroConstString),
-			0,
-		)
+// 	return
+// }
 
-	}
+// GetWeeklyBounds - 取得時間上下限星期日
+/**
+ * @param  time.Time dateTime  時間
+ * @return time.Time lower 下限星期日
+ * @return time.Time upper 上限星期日
+ */
+func GetWeeklyBounds(dateTime time.Time) (low time.Time, upper time.Time) {
+
+	localDateTime := dateTime.Local()
+
+	weekDayInt := (int(localDateTime.Weekday()))
+
+	low = dateTime.AddDate(0, 0, -((weekDayInt + 6) % 7))
+	upper = dateTime.AddDate(0, 0, (7-weekDayInt)%7)
+
+	logings.SendLog(
+		[]string{`取得時間 %+v 下限星期日 %+v 上限星期日 %+v`},
+		[]interface{}{localDateTime, low, upper},
+		nil,
+		0,
+	)
 
 	return
 }

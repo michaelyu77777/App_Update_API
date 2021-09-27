@@ -7,8 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"leapsy.com/packages/logings"
-	"leapsy.com/packages/model"
 	"leapsy.com/packages/network"
+	"leapsy.com/records"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,9 +17,9 @@ import (
 
 // FindAllAlertRecords - 取得所有帳號
 /**
- * @return results []model.Account 取得結果
+ * @return results []records.Account 取得結果
  */
-func (mongoDB *MongoDB) FindAllAccounts() (results []model.Account) {
+func (mongoDB *MongoDB) FindAllAccounts() (results []records.Account) {
 
 	// 取得警報紀錄
 	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
@@ -29,7 +29,7 @@ func (mongoDB *MongoDB) FindAllAccounts() (results []model.Account) {
 	return // 回傳
 }
 
-func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []model.Account) {
+func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []records.Account) {
 
 	// 取得警報紀錄
 	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
@@ -43,9 +43,9 @@ func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []model.Acco
 /**
  * @param bson.M filter 過濾器
  * @param ...*options.FindOptions opts 選項
- * @return results []model.Account 取得結果
+ * @return results []records.Account 取得結果
  */
-func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOptions) (results []model.Account) {
+func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOptions) (results []records.Account) {
 
 	mongoClientPointer := mongoDB.Connect() // 資料庫指標
 
@@ -92,7 +92,7 @@ func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOp
 
 		for cursor.Next(context.TODO()) { // 針對每一紀錄
 
-			var account model.Account
+			var account records.Account
 
 			cursorDecodeError := cursor.Decode(&account) // 解析紀錄
 
@@ -157,7 +157,7 @@ func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOp
  */
 func (mongoDB *MongoDB) findOneAndUpdateAccountSET(
 	filter, update primitive.M,
-	opts ...*options.FindOneAndUpdateOptions) (results []model.Account) {
+	opts ...*options.FindOneAndUpdateOptions) (results []records.Account) {
 
 	return mongoDB.findOneAndUpdateAccount(
 		filter,
@@ -177,7 +177,7 @@ func (mongoDB *MongoDB) findOneAndUpdateAccountSET(
  */
 func (mongoDB *MongoDB) findOneAndUpdateAccount(
 	filter, update primitive.M,
-	opts ...*options.FindOneAndUpdateOptions) (results []model.Account) {
+	opts ...*options.FindOneAndUpdateOptions) (results []records.Account) {
 
 	mongoClientPointer := mongoDB.Connect() // 資料庫指標
 
@@ -253,7 +253,7 @@ func (mongoDB *MongoDB) findOneAndUpdateAccount(
  * @param primitive.M update 更新
  * @return *mongo.UpdateResult returnUpdateResult 更新結果
  */
-func (mongoDB *MongoDB) UpdateOneAccountPassword(userPassword string, userID string) (results []model.Account) {
+func (mongoDB *MongoDB) UpdateOneAccountPassword(userPassword string, userID string) (results []records.Account) {
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
@@ -278,7 +278,7 @@ func (mongoDB *MongoDB) UpdateOneAccountPassword(userPassword string, userID str
  * @param primitive.M update 更新
  * @return *mongo.UpdateResult returnUpdateResult 更新結果
  */
-func (mongoDB *MongoDB) UpdateOneAccountVerificationCode(verificationCode string, userID string) (results []model.Account) {
+func (mongoDB *MongoDB) UpdateOneAccountVerificationCode(verificationCode string, userID string) (results []records.Account) {
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
@@ -303,7 +303,7 @@ func (mongoDB *MongoDB) UpdateOneAccountVerificationCode(verificationCode string
  * @param primitive.M update 更新
  * @return *mongo.UpdateResult returnUpdateResult 更新結果
  */
-func (mongoDB *MongoDB) UpdateOneAccountPasswordAndVerificationCodeValidPeriod(userPassword string, validPeriod time.Time, userID string) (results []model.Account) {
+func (mongoDB *MongoDB) UpdateOneAccountPasswordAndVerificationCodeValidPeriod(userPassword string, validPeriod time.Time, userID string) (results []records.Account) {
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
@@ -330,7 +330,7 @@ func (mongoDB *MongoDB) UpdateOneAccountPasswordAndVerificationCodeValidPeriod(u
  * @param primitive.M update 更新
  * @return *mongo.UpdateResult returnUpdateResult 更新結果
  */
-func (mongoDB *MongoDB) UpdateOneAccountVerificationCodeAndVerificationCodeValidPeriod(verificationCode string, validPeriod time.Time, userID string) (results []model.Account) {
+func (mongoDB *MongoDB) UpdateOneAccountVerificationCodeAndVerificationCodeValidPeriod(verificationCode string, validPeriod time.Time, userID string) (results []records.Account) {
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{

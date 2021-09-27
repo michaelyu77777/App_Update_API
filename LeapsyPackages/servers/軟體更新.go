@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"leapsy.com/packages/logings"
-	"leapsy.com/packages/model"
 	"leapsy.com/packages/network"
+	"leapsy.com/records"
 )
 
 // 驗證並取得所有apps info
@@ -80,7 +80,8 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			result := mongoDB.FindAllAppsInfo()
 
 			// Response Struct (組出DownloadPath,去掉不需要的欄位)
-			var resultWithDownloadPath []model.AppsInfoWithDownloadPath
+			// var resultWithDownloadPath []model.AppsInfoWithDownloadPath
+			var resultWithDownloadPath []records.AppsInfoWithDownloadPath
 
 			// 複製共用餐數到 Response Struct (依照原本順序)
 			if jsonBytes, jsonMarshalError := json.Marshal(result); jsonMarshalError == nil {
@@ -127,7 +128,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 			// fmt.Printf("找到appsInfo結果 %d個", len(result))
 			// 包成前端格式
-			myResult := model.AppsInfoResponse{
+			myResult := records.AppsInfoResponse{
 				IsSuccess: true,
 				Results:   "",
 				Data:      resultWithDownloadPath,
@@ -151,7 +152,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			fmt.Println("密碼錯誤")
 
 			// 包成回給前端的格式
-			myResult := model.AppsInfoResponse{
+			myResult := records.AppsInfoResponse{
 				IsSuccess: false,
 				Results:   "驗證失敗",
 				Data:      nil,
@@ -184,7 +185,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 		fmt.Println("取參數錯誤,錯誤訊息:bindJSONError=", bindJSONError, ",bindURIError=", bindURIError)
 
 		// 包成回給前端的格式
-		myResult := model.AppsInfoResponse{
+		myResult := records.AppsInfoResponse{
 			IsSuccess: false,
 			Results:   "驗證失敗",
 			Data:      nil,
