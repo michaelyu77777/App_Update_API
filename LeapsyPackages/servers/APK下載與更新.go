@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	// "gopkg.in/mgo.v2/bson" //Michael
 	"leapsy.com/records"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,10 @@ import (
 
 	"github.com/shogo82148/androidbinary"
 	"github.com/shogo82148/androidbinary/apk"
+
+	"go.mongodb.org/mongo-driver/bson" //Kevin
+	// "go.mongodb.org/mongo-driver/bson/primitive"
+	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // getAPPsAPIHandler - 取得APK檔
@@ -241,10 +246,19 @@ func postReanalyseAPIHandler(apiServer *APIServer, ginContextPointer *gin.Contex
 			pkgName, appLabel, versionCode, VersionName := getApkDetails(parametersApkDirectoryName, apkFileName)
 			fmt.Printf("解析並取得APK詳細資料：pkgName=%s, appLabel=%s, versionCode=%d, VersionName=%s \n\n", pkgName, appLabel, versionCode, VersionName)
 
-			// 將分析資料更新到資料庫中
+			// 更新APK資訊到資料庫（pkgName、versionCode、VersionName）
+			results := mongoDB.FindOneAndUpdateAppsInfoSET(
+				bson.M{
+					"apkDirectoryName": parametersApkDirectoryName,
+				},
+				bson.M{
+					"packageName":     pkgName,
+					"lastVersionCode": versionCode,
+					"lastVersionName": VersionName,
+				})
 
 			// 重找新找此筆資料
-			results := mongoDB.FindAppsInfoByApkDirectoryName(parametersApkDirectoryName)
+			// results := mongoDB.FindAppsInfoByApkDirectoryName(parametersApkDirectoryName)
 
 			// Response
 			responseResult := ReanalyseAPI{

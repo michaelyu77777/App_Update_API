@@ -259,3 +259,102 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 
 	return // 回傳
 }
+
+// findOneAndUpdateAccountSET - 提供更新部分欄位
+/**
+ * @param primitive.M filter 過濾器
+ * @param primitive.M update 更新
+ * @param ...*options.FindOneAndUpdateOptions 選項
+ * @return result []records.AlertRecord 更添結果
+ */
+func (mongoDB *MongoDB) FindOneAndUpdateAppsInfoSET(
+	filter, update primitive.M,
+	opts ...*options.FindOneAndUpdateOptions) (results []records.AppsInfo) {
+
+	return mongoDB.findOneAndUpdateAppsInfo(
+		filter,
+		bson.M{
+			`$set`: update,
+		},
+	)
+
+}
+
+// findOneAndUpdateAccount - 提供可以丟整個物件的更新(primitive.M)
+/**
+ * @param primitive.M filter 過濾器
+ * @param primitive.M update 更新
+ * @param ...*options.FindOneAndUpdateOptions 選項
+ * @return result []records.AlertRecord 更添結果
+ */
+func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
+	filter, update primitive.M,
+	opts ...*options.FindOneAndUpdateOptions) (results []records.AppsInfo) {
+
+	mongoClientPointer := mongoDB.Connect() // 資料庫指標
+
+	if nil != mongoClientPointer { // 若資料庫指標不為空
+		defer mongoDB.Disconnect(mongoClientPointer) // 記得關閉資料庫指標
+
+		// 預設主機
+		address := fmt.Sprintf(
+			`%s:%d`,
+			mongoDB.GetConfigValueOrPanic(`server`),
+			mongoDB.GetConfigPositiveIntValueOrPanic(`port`),
+		)
+
+		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
+
+		// alertRWMutex.Lock() // 寫鎖
+
+		// 更新
+		singleResultPointer := mongoClientPointer.
+			Database(mongoDB.GetConfigValueOrPanic(`database`)).
+			Collection(mongoDB.GetConfigValueOrPanic(`appsInfo-table`)).
+			FindOneAndUpdate(
+				context.TODO(),
+				filter,
+				update,
+				opts...,
+			)
+
+			/*
+				FindOneAndUpdate(
+					context.TODO(),
+					filter,
+						bson.M{
+							`$set`:update,
+						},
+						opts...,
+					)
+			*/
+
+		findOneAndUpdateError := singleResultPointer.Err() // 更添錯誤
+
+		if nil != findOneAndUpdateError { // 若更添警報紀錄錯誤且非檔案不存在錯誤
+
+			// log 紀錄有查詢動作
+			logings.SendLog(
+				[]string{`%s %s 解析APK並更新資料庫AppsInfo，Error= %+v `},
+				append(defaultArgs, update),
+				findOneAndUpdateError,
+				logrus.ErrorLevel,
+			)
+
+			return // 回傳
+		}
+
+		// log 紀錄有查詢動作
+		logings.SendLog(
+			[]string{`%s %s 解析APK並更新資料庫AppsInfo `},
+			append(defaultArgs, update),
+			nil,
+			logrus.InfoLevel,
+		)
+
+		results = mongoDB.findAppsInfo(filter)
+
+	}
+
+	return
+}

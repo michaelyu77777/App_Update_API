@@ -23,6 +23,8 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/shogo82148/androidbinary v1.0.2
 	github.com/sirupsen/logrus v1.8.1
+	go.mongodb.org/mongo-driver v1.7.2
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	leapsy.com/databases v0.0.0-00010101000000-000000000000
 	leapsy.com/model v0.0.0-00010101000000-000000000000
 	leapsy.com/packages/configurations v0.0.0-00010101000000-000000000000
