@@ -114,7 +114,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			// 取APK下載的設定值
 			// apkDownloadURLBase := "http://192.168.1.190:63997/appUpdate/download/"
 			apkDownloadHost := apiServer.GetConfigValueOrPanic(`apkDownloadHost`)
-			apkDownloadPort := apiServer.GetConfigValueOrPanic(`apkDownloadPort`)
+			apkDownloadPort := apiServer.GetConfigValueOrPanic(`port`) //下載APK port與API port一樣
 			apkDownloadURLBase := apiServer.GetConfigValueOrPanic(`apkDownloadURLBase`)
 
 			for i, _ := range resultWithDownloadPath {
