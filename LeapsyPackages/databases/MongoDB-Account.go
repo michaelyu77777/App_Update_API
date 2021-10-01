@@ -62,7 +62,7 @@ func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOp
 
 		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
 
-		// .RLock() // 讀鎖
+		accountRWMutex.RLock() //讀鎖
 
 		// 查找紀錄
 		cursor, findError := mongoClientPointer.
@@ -74,7 +74,7 @@ func (mongoDB *MongoDB) findAccounts(filter primitive.M, opts ...*options.FindOp
 				opts...,
 			)
 
-		// alertRWMutex.RUnlock() // 讀解鎖
+		accountRWMutex.RUnlock() //讀解鎖
 
 		// log
 		logings.SendLog(
@@ -193,7 +193,7 @@ func (mongoDB *MongoDB) findOneAndUpdateAccount(
 
 		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
 
-		// alertRWMutex.Lock() // 寫鎖
+		accountRWMutex.Lock() // 寫鎖
 
 		// 更新警報記錄
 		singleResultPointer := mongoClientPointer.
@@ -216,6 +216,8 @@ func (mongoDB *MongoDB) findOneAndUpdateAccount(
 						opts...,
 					)
 			*/
+
+		accountRWMutex.Unlock() // 寫解鎖
 
 		findOneAndUpdateError := singleResultPointer.Err() // 更添錯誤
 

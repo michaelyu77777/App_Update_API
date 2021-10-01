@@ -180,7 +180,8 @@ var (
 
 var ( // 記錄器
 	// batchSize = configurations.GetConfigPositiveIntValueOrPanic(`local`, `batch-size`) // 取得預設批次大小
-	accountRWMutex,
+	accountRWMutex, //軟體更新：帳戶
+	appsInfoRWMutex, //軟體更新：軟體資訊
 	deviceRWMutex,
 	eventRWMutex,
 	appRecordRWMutex,
@@ -189,4 +190,6 @@ var ( // 記錄器
 	employeeRWMutex,
 	codeRWMutex,
 	applicationRWMutex sync.RWMutex // 讀寫鎖
+	
+
 )

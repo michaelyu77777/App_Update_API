@@ -182,7 +182,7 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 
 		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
 
-		// hourlyRWMutex.RLock() // 讀鎖
+		appsInfoRWMutex.RLock() // 讀鎖
 
 		// 查找紀錄
 		cursor, findError := mongoClientPointer.
@@ -194,7 +194,7 @@ func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOp
 				opts...,
 			)
 
-		// hourlyRWMutex.RUnlock() // 讀解鎖
+		appsInfoRWMutex.RUnlock() // 讀解鎖
 
 		// log 紀錄有查詢動作
 		logings.SendLog(
@@ -305,7 +305,7 @@ func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
 
 		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
 
-		// alertRWMutex.Lock() // 寫鎖
+		appsInfoRWMutex.Lock() // 寫鎖
 
 		// 更新
 		singleResultPointer := mongoClientPointer.
@@ -328,6 +328,9 @@ func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
 						opts...,
 					)
 			*/
+
+
+		appsInfoRWMutex.Unlock() // 寫解鎖
 
 		findOneAndUpdateError := singleResultPointer.Err() // 更添錯誤
 
