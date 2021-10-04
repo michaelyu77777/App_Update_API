@@ -77,6 +77,14 @@ func (apiServer *APIServer) start() {
 		},
 	)
 
+	// 上傳APK
+	enginePointer.POST(
+		`/appUpdate/file/uploadSingle`,
+		func(ginContextPointer *gin.Context) {
+			UploadSingleIndex(apiServer, ginContextPointer)
+		},
+	)
+
 	// 下載APK
 	enginePointer.GET(
 		`/appUpdate/download/:downloadKeyword`,
