@@ -243,7 +243,7 @@ func postReanalyseAPIHandler(apiServer *APIServer, ginContextPointer *gin.Contex
 			// 檔案存在
 
 			// 進行APK分析
-			pkgName, appLabel, versionCode, VersionName := getApkDetails(parametersApkDirectoryName, apkFileName)
+			pkgName, appLabel, versionCode, VersionName := getApkDetailsInApkDirectory(parametersApkDirectoryName, apkFileName)
 			fmt.Printf("解析並取得APK詳細資料：pkgName=%s, appLabel=%s, versionCode=%d, VersionName=%s \n\n", pkgName, appLabel, versionCode, VersionName)
 
 			// 更新APK資訊到資料庫（pkgName、versionCode、VersionName）
@@ -300,10 +300,65 @@ func postReanalyseAPIHandler(apiServer *APIServer, ginContextPointer *gin.Contex
 
 }
 
-func getApkDetails(apkDirectoryName string, apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
+func getApkDetailsInApkDirectory(apkDirectoryName string, apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
 
 	// 讀取apk
 	pkg, _ := apk.OpenFile("./apk/" + apkDirectoryName + "/" + apkFileName)
+	defer pkg.Close()
+
+	// // icon image to base64 string
+	// icon, _ := pkg.Icon(nil) // returns the icon of APK as image.Image
+	// fmt.Println("圖標：icon", icon)
+
+	// buf := new(bytes.Buffer)
+
+	// // Option.Quality壓縮品質:範圍1~100 (大小約1kb ~ 10kb)
+	// jpeg.Encode(buf, icon, &jpeg.Options{100})
+	// // jpeg.Encode(buf, icon, &jpeg.Options{35})
+
+	// imageBit := buf.Bytes()
+	// /*Defining the new image size*/
+
+	// photoBase64 := b64.StdEncoding.EncodeToString([]byte(imageBit))
+	// fmt.Println("Photo Base64.............................:" + photoBase64)
+
+	// pkgName
+	pkgName = pkg.PackageName() // returns the package name
+	fmt.Println("pkgName=<" + pkgName + ">")
+
+	resConfigEN := &androidbinary.ResTableConfig{
+		Language: [2]uint8{uint8('e'), uint8('n')},
+	}
+
+	// appLabel
+	appLabel, _ = pkg.Label(resConfigEN) // get app label for en translation
+	fmt.Println("appLabel=<" + appLabel + ">")
+
+	// versionCode
+	mainfest := pkg.Manifest()
+	fmt.Printf("versionCode=<%+v>\n", mainfest.VersionCode)
+	vCode, err := mainfest.VersionCode.Int32()
+	versionCode = int(vCode) // int32轉成int
+	fmt.Printf("versionCode value=<%d>\n", vCode)
+	fmt.Println("err=", err)
+
+	// VersionName
+	fmt.Printf("VersionName=<%+v> \n", mainfest.VersionName)
+	versionName, err = mainfest.VersionName.String()
+	fmt.Printf("VersionName value=<%s> \n", versionName)
+	fmt.Println("err=", err)
+
+	// mainActivity
+	// mainActivity, err := pkg.MainActivity()
+	// fmt.Printf("mainActivity = %+v \n", mainActivity)
+
+	return
+}
+
+func getApkDetailsInApkTempDirectory(apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
+
+	// 讀取apk
+	pkg, _ := apk.OpenFile("./apkTemp/" + apkFileName)
 	defer pkg.Close()
 
 	// // icon image to base64 string

@@ -165,6 +165,19 @@ func (mongoDB *MongoDB) FindAppsInfoByApkDirectoryName(apkDirectoryName string) 
 	return // 回傳
 }
 
+// 尋找符合的專案名稱,app名稱
+func (mongoDB *MongoDB) FindAppsInfoByLabelName(labelName string) (results []records.AppsInfo) {
+
+	// 回傳結果
+	results = mongoDB.findAppsInfo(
+		bson.M{
+			"labelName": labelName,
+		},
+	)
+
+	return // 回傳
+}
+
 // 查找[資料庫-軟體更新]appsinfo(軟體資訊)
 func (mongoDB *MongoDB) findAppsInfo(filter primitive.M, opts ...*options.FindOptions) (results []records.AppsInfo) {
 

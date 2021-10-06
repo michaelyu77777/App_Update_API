@@ -123,6 +123,7 @@ type AppsInfo struct {
 
 	ApkDirectoryName string `json:"apkDirectoryName"` // 存放APK資料夾名稱
 	ApkFileName      string `json:"apkFileName"`      // APK檔案名稱
+	LabelName        string `json:"labelName"`        // APK Label名稱
 }
 
 // 軟體資訊(Response client用)
