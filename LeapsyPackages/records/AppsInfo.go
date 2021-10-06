@@ -97,6 +97,7 @@ type AppsInfoCommonStruct struct {
 	AppNameJpn string `json:"appNameJpn"` //軟體名稱 日文
 	AppNameKor string `json:"appNameKor"` //軟體名稱 韓文
 
+	LabelName       string `json:"labelName"`       // APK Label名稱
 	LastVersionCode int    `json:"lastVersionCode"` //最新版本號
 	LastVersionName string `json:"lastVersionName"` //最新版本名
 	PackageName     string `json:"packageName"`     //封包名稱
@@ -120,10 +121,9 @@ type AppsInfoCommonStruct struct {
 // 軟體資訊(DB用)
 type AppsInfo struct {
 	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
-
-	ApkDirectoryName string `json:"apkDirectoryName"` // 存放APK資料夾名稱
-	ApkFileName      string `json:"apkFileName"`      // APK檔案名稱
-	LabelName        string `json:"labelName"`        // APK Label名稱
+	ApkDirectoryName     string           `json:"apkDirectoryName"` // 存放APK資料夾名稱
+	ApkFileName          string           `json:"apkFileName"`      // APK檔案名稱
+	// LabelName        string `json:"labelName"`        // APK Label名稱
 }
 
 // 軟體資訊(Response client用)

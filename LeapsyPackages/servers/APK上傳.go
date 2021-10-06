@@ -7,8 +7,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"leapsy.com/records"
 )
 
 //func UploadSingleIndex(ctx *gin.Context) {
@@ -27,24 +30,10 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	saveFileToPath(file, saveTempPath, tempFileName)
 
 	fmt.Println("取出檔名＝" + tempFileName)
-	// out, err := os.Create("apkTemp/" + filename) // 建立空檔
-	// defer out.Close()
-
-	// if err != nil {
-	// 	log.Fatal(err) // Log待補
-	// 	fmt.Println(err)
-	// }
-
-	// _, err = io.Copy(out, file) // 將file數據複製到空檔
-
-	// if err != nil {
-	// 	log.Fatal(err) // Log待補
-	// 	fmt.Println(err)
-	// }
 
 	// 解析暫存APK
-	// pkgName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(filename)
-	_, labelName, _, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+	packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+	//_, labelName, _, versionName := getApkDetailsInApkTempDirectory(tempFileName)
 
 	// 查找是否已建檔
 	result := mongoDB.FindAppsInfoByLabelName(labelName)
@@ -62,6 +51,26 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		} else {
 			fmt.Println("已刪除暫存檔案")
 		}
+
+		// Response Client
+		message := ""
+
+		if err == nil {
+			message = "您尚未建檔，無法上傳Apk檔，請先進行AppsInfo初次建檔"
+		} else {
+			message = fmt.Sprintf("Error : %s", err.Error())
+		}
+
+		ginContextPointer.JSON(http.StatusOK, gin.H{
+			"isSuccess": false,
+			"results":   message,
+			"appsInfo": records.AppsInfoCommonStruct{
+				LabelName:       labelName,
+				PackageName:     packageName,
+				LastVersionCode: versionCode,
+				LastVersionName: versionName,
+			},
+		})
 
 	} else {
 		fmt.Println("已建檔")
@@ -101,24 +110,35 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		}
 
 		// 將解析後的資訊，全部更新到對應app的appsinfo中
+		results := mongoDB.FindOneAndUpdateAppsInfoSET(
+			bson.M{
+				"labelName": labelName,
+			},
+			bson.M{
+				"packageName":       packageName,
+				"lastVersionCode":   versionCode,
+				"lastVersionName":   versionName,
+				"apkFileName":       apkName,
+				"lastApkUpdateTime": time.Now(),
+			})
 
+		// Response Client
+		isSuccess := true
+		message := ""
+
+		if err == nil {
+			message = "您已完成上傳檔案"
+		} else {
+			isSuccess = false
+			message = fmt.Sprintf("Error : %s", err.Error())
+		}
+
+		ginContextPointer.JSON(http.StatusOK, gin.H{
+			"isSuccess": isSuccess,
+			"results":   message,
+			"appsInfo":  results[0],
+		})
 	}
-
-	// Response Client
-	message := ""
-
-	if err == nil {
-		message = "您已完成上傳檔案"
-	} else {
-		message = fmt.Sprintf("Error : %s", err.Error())
-	}
-
-	ginContextPointer.JSON(http.StatusOK, gin.H{
-		"isSuccess":     true,
-		"results":       message,
-		"fileName":      tempFileName,
-		"fileDirectory": "test",
-	})
 
 }
 
