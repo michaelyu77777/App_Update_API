@@ -38,10 +38,32 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	// 查找是否已建檔
 	result := mongoDB.FindAppsInfoByLabelName(labelName)
 
-	// 若已建檔，有找到結果，儲存正式APK檔
+	// 若沒建檔（沒找到結果）儲存正式APK檔
 	if 1 > len(result) {
-		//	沒建檔，刪除暫存檔
+		//	沒建檔
 		fmt.Println("未建檔")
+
+		// 建立一筆新的appsInfo
+		appsInfoCommonStruct := records.AppsInfoCommonStruct{
+			PackageName:     packageName,
+			LabelName:       labelName,
+			LastVersionCode: versionCode,
+			LastVersionName: versionName,
+		}
+		document := records.AppsInfo{
+			AppsInfoCommonStruct: appsInfoCommonStruct,
+		}
+		mongoDB.InsertOneAppsInfo(document)
+
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
 
 		// 刪除tempAPK檔
 		err = os.Remove(saveTempPath + tempFileName)

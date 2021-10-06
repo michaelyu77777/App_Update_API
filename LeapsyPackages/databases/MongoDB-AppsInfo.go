@@ -342,7 +342,6 @@ func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
 					)
 			*/
 
-
 		appsInfoRWMutex.Unlock() // 寫解鎖
 
 		findOneAndUpdateError := singleResultPointer.Err() // 更添錯誤
@@ -369,6 +368,69 @@ func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
 		)
 
 		results = mongoDB.findAppsInfo(filter)
+
+	}
+
+	return
+}
+
+// insertOneAppsInfo - 新增一筆AppsInfo
+func (mongoDB *MongoDB) InsertOneAppsInfo(appsInfo records.AppsInfo) {
+
+	mongoClientPointer := mongoDB.Connect() // 資料庫指標
+
+	if nil != mongoClientPointer { // 若資料庫指標不為空
+		defer mongoDB.Disconnect(mongoClientPointer) // 記得關閉資料庫指標
+
+		// 預設主機
+		address := fmt.Sprintf(
+			`%s:%d`,
+			mongoDB.GetConfigValueOrPanic(`server`),
+			mongoDB.GetConfigPositiveIntValueOrPanic(`port`),
+		)
+
+		defaultArgs := network.GetAliasAddressPair(address) // 預設參數
+
+		appsInfoRWMutex.Lock() // 寫鎖
+
+		// 添加一筆軟體訊息
+		_, insertOneError := mongoClientPointer.
+			Database(mongoDB.GetConfigValueOrPanic(`database`)).
+			Collection(mongoDB.GetConfigValueOrPanic(`appsInfo-table`)).
+			InsertOne(
+				context.TODO(),
+				appsInfo,
+			)
+
+		appsInfoRWMutex.Unlock() // 寫解鎖
+
+		if nil != insertOneError { // 若更添警報紀錄錯誤且非檔案不存在錯誤
+
+			// log 紀錄有查詢動作
+			logings.SendLog(
+				[]string{`%s %s 新增一筆資料到資料庫AppsInfo，Error= %+v `},
+				append(defaultArgs, appsInfo),
+				insertOneError,
+				logrus.ErrorLevel,
+			)
+
+			return // 回傳
+		}
+
+		// log 紀錄有查詢動作
+		logings.SendLog(
+			[]string{`%s %s 新增一筆資料到資料庫AppsInfo `},
+			append(defaultArgs, appsInfo),
+			nil,
+			logrus.InfoLevel,
+		)
+
+		if nil != insertOneError { // 若添寫公司紀錄錯誤
+			return // 回傳
+		}
+
+		// results = mongoDB.findAppsInfo(filter)
+		fmt.Println("已新增一筆資料到appsInfo")
 
 	}
 
