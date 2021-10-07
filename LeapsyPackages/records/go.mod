@@ -12,6 +12,4 @@ replace leapsy.com/packages/configurations => ../configurations
 
 replace leapsy.com/packages/network => ../network
 
-replace leapsy.com/model => ../model
-
 require go.mongodb.org/mongo-driver v1.7.2

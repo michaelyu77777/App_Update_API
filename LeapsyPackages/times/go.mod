@@ -8,8 +8,6 @@ replace leapsy.com/packages/logings => ../logings
 
 replace leapsy.com/records => ../records
 
-replace leapsy.com/model => ../model
-
 replace leapsy.com/packages/configurations => ../configurations
 
 replace leapsy.com/packages/network => ../network

@@ -15,7 +15,6 @@ import (
 )
 
 // 尋找所有 apps info
-// func (mongoDB *MongoDB) FindAllAppsInfo() (results []model.AppsInfo) {
 func (mongoDB *MongoDB) FindAllAppsInfo() (results []records.AppsInfo) {
 
 	// 回傳結果
@@ -27,7 +26,6 @@ func (mongoDB *MongoDB) FindAllAppsInfo() (results []records.AppsInfo) {
 }
 
 // 尋找符合的專案名稱,app名稱
-// func (mongoDB *MongoDB) FindAppsInfoByProjectNameAndAppName(projectName string, appName string) (results []model.AppsInfo) {
 func (mongoDB *MongoDB) FindAppsInfoByProjectNameAndAppName(projectName string, appName string) (results []records.AppsInfo) {
 
 	// 回傳結果

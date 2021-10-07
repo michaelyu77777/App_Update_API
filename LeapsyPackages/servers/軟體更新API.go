@@ -80,7 +80,6 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			result := mongoDB.FindAllAppsInfo()
 
 			// Response Struct (組出DownloadPath,去掉不需要的欄位)
-			// var resultWithDownloadPath []model.AppsInfoWithDownloadPath
 			var resultWithDownloadPath []records.AppsInfoWithDownloadPath
 
 			// 複製共用餐數到 Response Struct (依照原本順序)
@@ -158,12 +157,6 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 				Data:      nil,
 			}
 
-			// myResult := model.APIResponse{
-			// 	IsSuccess: false,
-			// 	Results:   "驗證失敗",
-			// 	Data:      nil,
-			// }
-
 			// 回應給前端
 			ginContextPointer.JSON(http.StatusNotFound, myResult)
 
@@ -190,12 +183,6 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			Results:   "驗證失敗",
 			Data:      nil,
 		}
-
-		// myResult := model.APIResponse{
-		// 	IsSuccess: false,
-		// 	Results:   "驗證失敗",
-		// 	Data:      nil,
-		// }
 
 		// 回應給前端
 		ginContextPointer.JSON(http.StatusNotFound, myResult)

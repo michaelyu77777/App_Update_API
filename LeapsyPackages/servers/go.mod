@@ -14,8 +14,6 @@ replace leapsy.com/records => ../records
 
 replace leapsy.com/times => ../times
 
-replace leapsy.com/model => ../model
-
 replace leapsy.com/packages/paths => ../paths
 
 require (
@@ -26,7 +24,6 @@ require (
 	go.mongodb.org/mongo-driver v1.7.2
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 	leapsy.com/databases v0.0.0-00010101000000-000000000000
-	leapsy.com/model v0.0.0-00010101000000-000000000000
 	leapsy.com/packages/configurations v0.0.0-00010101000000-000000000000
 	leapsy.com/packages/logings v0.0.0-00010101000000-000000000000
 	leapsy.com/packages/network v0.0.0-00010101000000-000000000000

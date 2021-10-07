@@ -13,8 +13,6 @@ replace leapsy.com/packages/jsons => ../LeapsyPackages/jsons
 
 replace leapsy.com/packages/logings => ../LeapsyPackages/logings
 
-replace leapsy.com/model => ../LeapsyPackages/model
-
 replace leapsy.com/packages/network => ../LeapsyPackages/network
 
 replace leapsy.com/packages/paths => ../LeapsyPackages/paths

@@ -86,19 +86,21 @@ func (apiServer *APIServer) start() {
 
 	// 下載APK
 	enginePointer.GET(
-		`/appUpdate/download/:downloadKeyword`,
+		// `/appUpdate/download/:downloadKeyword`,
+		`/appUpdate/download/:labelName`,
 		func(ginContextPointer *gin.Context) {
 			getAPPsAPIHandler(apiServer, ginContextPointer)
 		},
 	)
 
+	// 已經有上傳功能直接棄用
 	// 重新解析APK某資料夾的檔案
-	enginePointer.POST(
-		`/appUpdate/postReanalyse`,
-		func(ginContextPointer *gin.Context) {
-			postReanalyseAPIHandler(apiServer, ginContextPointer)
-		},
-	)
+	// enginePointer.POST(
+	// 	`/appUpdate/postReanalyse`,
+	// 	func(ginContextPointer *gin.Context) {
+	// 		postReanalyseAPIHandler(apiServer, ginContextPointer)
+	// 	},
+	// )
 
 	// 取得所有 apps info
 	// enginePointer.GET(
@@ -191,7 +193,8 @@ func (apiServer *APIServer) stop() {
 // Parameters - URL參數
 type Parameters struct {
 	// MacAddress string `uri:"macAddress"`
-	DownloadKeyword string `uri:"downloadKeyword"`
+	// DownloadKeyword string `uri:"downloadKeyword"`
+	LabelName string `uri:"labelName"`
 }
 
 // // APIResponse - API回應
@@ -496,25 +499,25 @@ func isFileNotExistedByDirectoryName(downloadKeyword string) (result bool) {
  * @param  string downloadKeyword apps代號
  * @return bool result 結果 apkFileName APK檔名
  */
-func isFileNotExistedAndGetApkFileNameByDirectoryName(apkDirectoryName string) (result bool, apkFileName string) {
+func isFileNotExistedAndGetApkFileNameByDirectoryName(labelName string) (result bool, apkFileName string) {
 
 	// 去資料庫查此資料夾名稱所對應的APK檔名
-	appsInfo := mongoDB.FindAppsInfoByApkDirectoryName(apkDirectoryName)
+	appsInfo := mongoDB.FindAppsInfoByLabelName(labelName)
 
 	// 找不到此APP
 	if 1 > len(appsInfo) {
 
-		detail := `資料庫中找不到存放資料夾名稱為 apkDirectoryName:%s 的APP`
+		detail := "資料庫中找不到存放資料夾名稱為<" + labelName + ">的APP"
 
 		// log
 		logings.SendLog(
 			[]string{detail},
-			[]interface{}{apkDirectoryName},
+			[]interface{}{labelName},
 			nil,
 			logrus.WarnLevel,
 		)
 
-		fmt.Printf(detail+"\n", apkDirectoryName)
+		fmt.Printf(detail+"\n", labelName)
 		result = true
 		return
 
@@ -523,8 +526,15 @@ func isFileNotExistedAndGetApkFileNameByDirectoryName(apkDirectoryName string) (
 		// 取出APK檔名
 		apkFileName = appsInfo[0].ApkFileName
 
+		fmt.Println("查詢labelName=" + labelName)
+		fmt.Println("取出ApkFileName=" + apkFileName)
+		fmt.Printf("取出appsInfo[0]= %+v", appsInfo[0])
+
 		// 看APK檔案存不存在
-		result = paths.IsFileNotExisted(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + apkDirectoryName + "/" + apkFileName)
+		result = paths.IsFileNotExisted(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + labelName + "/" + apkFileName)
+		// path := paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + "相簿/" + apkFileName
+		// result = paths.IsFileNotExisted(path)
+		// fmt.Println("path=", path)
 		fmt.Println("檔案或路徑是否不存在？", result)
 		return
 	}
