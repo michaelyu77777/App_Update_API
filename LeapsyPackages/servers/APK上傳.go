@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"leapsy.com/packages/configurations"
 	"leapsy.com/records"
 )
 
@@ -26,7 +27,7 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	// 暫存APK
 	tempFileName := header.Filename // 取出檔名
-	saveTempPath := "apkTemp/"
+	saveTempPath := configurations.GetConfigValueOrPanic(`local`, `pathTemp`)
 	saveFileToPath(file, saveTempPath, tempFileName)
 
 	fmt.Println("取出檔名＝" + tempFileName)
@@ -38,9 +39,12 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	// 查找是否已建檔
 	result := mongoDB.FindAppsInfoByLabelName(labelName)
 
-	// 若沒建檔（沒找到結果）儲存正式APK檔
+	// 回傳給Client的訊息
+	message := ""
+
+	// 若沒建檔，則先建檔
 	if 1 > len(result) {
-		//	沒建檔
+
 		fmt.Println("未建檔")
 
 		// 建立一筆新的appsInfo
@@ -50,114 +54,98 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 			LastVersionCode: versionCode,
 			LastVersionName: versionName,
 		}
+
 		document := records.AppsInfo{
 			AppsInfoCommonStruct: appsInfoCommonStruct,
 		}
-		mongoDB.InsertOneAppsInfo(document)
 
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
-		// 待補：走下面一樣的流程：建立資料夾＋儲存APK檔案＋刪除暫存檔
+		err := mongoDB.InsertOneAppsInfo(document)
 
-		// 刪除tempAPK檔
-		err = os.Remove(saveTempPath + tempFileName)
-		if err != nil {
-			log.Fatal(err) // Log待補
-			fmt.Println(err)
-		} else {
-			fmt.Println("已刪除暫存檔案")
-		}
-
-		// Response Client
-		message := ""
+		fmt.Println("已完成初次建檔")
 
 		if err == nil {
-			message = "您尚未建檔，無法上傳Apk檔，請先進行AppsInfo初次建檔"
+			message += "此 Apk Label 識別為「初次上傳」，已為您完成建檔。\n"
 		} else {
-			message = fmt.Sprintf("Error : %s", err.Error())
+			message += fmt.Sprintf("此 Apk Label 識別為「初次上傳」，建檔時發生錯誤，Error： %s", err.Error())
 		}
+	}
 
-		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"isSuccess": false,
-			"results":   message,
-			"appsInfo": records.AppsInfoCommonStruct{
-				LabelName:       labelName,
-				PackageName:     packageName,
-				LastVersionCode: versionCode,
-				LastVersionName: versionName,
-			},
-		})
+	// 看apk儲存資料夾下是否存在名稱為「labelName」的資料夾
+	apkPath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
+	// apkPath := "apk/" + labelName + "/"
 
-	} else {
-		fmt.Println("已建檔")
+	isFileExist, err := isExists(apkPath)
+	if err != nil {
+		fmt.Println("判斷資料夾是否存在時發生錯誤：", err)
+		log.Fatal(err) // Log待補
+	}
 
-		// 看路徑資料夾是否存在
-		apkPath := "apk/" + labelName + "/"
-		isFileExist, err := isExists(apkPath)
+	// 「labelName」的資料夾若不存，則建立「labelName」資料夾
+	if !isFileExist {
+		fmt.Println("LabelName資料夾不存在") // Log待補
+
+		//創建目錄
+		err = os.Mkdir(configurations.GetConfigValueOrPanic(`local`, `path`)+labelName, os.ModePerm)
+
 		if err != nil {
+			fmt.Println("創建資料夾時發生錯誤：", err)
 			log.Fatal(err) // Log待補
-			fmt.Println(err)
-		}
 
-		// 若不存在則建立資料夾
-		if !isFileExist {
+			message += "創建資料夾時發生錯誤"
 
-			err = os.Mkdir("apk/"+labelName, os.ModePerm) //創建目錄
-			if err != nil {
-				log.Fatal(err) // Log待補
-				fmt.Println(err)
-			} else {
-				fmt.Println("資料夾不存在，已創建資料夾") // Log待補
-			}
-		}
-
-		// 存檔：命名為 label + V_ + versionName
-		apkName := labelName + "_v" + versionName + ".apk"
-		savePath := "apk/" + labelName + "/"
-		saveFileToPath(file, savePath, apkName)
-
-		// 刪除tempAPK檔
-		err = os.Remove(saveTempPath + tempFileName)
-		if err != nil {
-			log.Fatal(err) // Log待補
-			fmt.Println(err)
-		} else {
-			fmt.Println("已刪除暫存檔案")
-		}
-
-		// 將解析後的資訊，全部更新到對應app的appsinfo中
-		results := mongoDB.FindOneAndUpdateAppsInfoSET(
-			bson.M{
-				"labelName": labelName,
-			},
-			bson.M{
-				"packageName":       packageName,
-				"lastVersionCode":   versionCode,
-				"lastVersionName":   versionName,
-				"apkFileName":       apkName,
-				"lastApkUpdateTime": time.Now(),
+			ginContextPointer.JSON(http.StatusOK, gin.H{
+				"isSuccess": false,
+				"message":   message,
 			})
 
-		// Response Client
-		isSuccess := true
-		message := ""
-
-		if err == nil {
-			message = "您已完成上傳檔案"
 		} else {
-			isSuccess = false
-			message = fmt.Sprintf("Error : %s", err.Error())
+			fmt.Println("已創建新資料夾") // Log待補
 		}
+	}
 
+	// 存檔：命名為 label + V_ + versionName
+	apkName := labelName + "_v" + versionName + ".apk"
+	savePath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
+	saveFileToPath(file, savePath, apkName)
+
+	// 刪除tempAPK檔
+	err = os.Remove(saveTempPath + tempFileName)
+	if err != nil {
+		log.Fatal(err) // Log待補
+		fmt.Println(err)
+		message += fmt.Sprintf("刪除檔案時發生錯誤，Error : %s \n", err.Error())
+	} else {
+		fmt.Println("已刪除暫存檔案")
+	}
+
+	// 將解析後的資訊，全部更新到對應app的appsinfo中
+	results := mongoDB.FindOneAndUpdateAppsInfoSET(
+		bson.M{
+			"labelname": labelName,
+		},
+		bson.M{
+			"packagename":       packageName,
+			"lastversioncode":   versionCode,
+			"lastversionname":   versionName,
+			"apkfilename":       apkName,
+			"lastapkupdatetime": time.Now(),
+		})
+
+	// Response Client
+	message += "您已完成上傳檔案"
+
+	if 1 > len(results) {
+		//查無結果
 		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"isSuccess": isSuccess,
-			"results":   message,
+			"isSuccess": true,
+			"message":   message,
+			"appsInfo":  results,
+		})
+	} else {
+		//有查到結果
+		ginContextPointer.JSON(http.StatusOK, gin.H{
+			"isSuccess": true,
+			"message":   message,
 			"appsInfo":  results[0],
 		})
 	}

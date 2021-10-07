@@ -35,7 +35,6 @@ type APIResponse struct {
 
 const ()
 
-
 // GetConfigValueOrPanic - 取得設定值否則結束程式
 /**
  * @param  string key  關鍵字
@@ -134,10 +133,10 @@ func (apiServer *APIServer) start() {
 	// )
 
 	apiServerPointer := &http.Server{
-		Addr: address, 
+		Addr:    address,
 		Handler: enginePointer,
-		} // 設定伺服器
-	apiServer.server = apiServerPointer                                     // 儲存伺服器指標
+	} // 設定伺服器
+	apiServer.server = apiServerPointer // 儲存伺服器指標
 
 	var apiServerPtrListenAndServeError error // 伺服器啟動錯誤
 
@@ -188,7 +187,6 @@ func (apiServer *APIServer) stop() {
 }
 
 /**以下函數為軟體下載所需函數**/
-
 
 // Parameters - URL參數
 type Parameters struct {
@@ -457,7 +455,7 @@ func isLowerCaseOrDigit(inputString string) (result bool) {
 	return
 }
 
-// isFileNotExisted - 判斷是否檔案不存在
+// isFileNotExisted - 判斷./apk/下的指定的檔案是否「不存在」
 /**
  * @param  string downloadKeyword apps代號
  * @return bool result 結果

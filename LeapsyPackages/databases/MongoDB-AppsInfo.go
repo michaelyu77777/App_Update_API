@@ -171,7 +171,7 @@ func (mongoDB *MongoDB) FindAppsInfoByLabelName(labelName string) (results []rec
 	// 回傳結果
 	results = mongoDB.findAppsInfo(
 		bson.M{
-			"labelName": labelName,
+			"labelname": labelName,
 		},
 	)
 
@@ -375,7 +375,7 @@ func (mongoDB *MongoDB) findOneAndUpdateAppsInfo(
 }
 
 // insertOneAppsInfo - 新增一筆AppsInfo
-func (mongoDB *MongoDB) InsertOneAppsInfo(appsInfo records.AppsInfo) {
+func (mongoDB *MongoDB) InsertOneAppsInfo(appsInfo records.AppsInfo) (insertOneError error) {
 
 	mongoClientPointer := mongoDB.Connect() // 資料庫指標
 
@@ -394,7 +394,7 @@ func (mongoDB *MongoDB) InsertOneAppsInfo(appsInfo records.AppsInfo) {
 		appsInfoRWMutex.Lock() // 寫鎖
 
 		// 添加一筆軟體訊息
-		_, insertOneError := mongoClientPointer.
+		_, insertOneError = mongoClientPointer.
 			Database(mongoDB.GetConfigValueOrPanic(`database`)).
 			Collection(mongoDB.GetConfigValueOrPanic(`appsInfo-table`)).
 			InsertOne(
