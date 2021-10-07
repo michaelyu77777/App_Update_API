@@ -64,7 +64,7 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		fmt.Println("已完成初次建檔")
 
 		if err == nil {
-			message += "此 Apk Label 識別為「初次上傳」，已為您完成建檔。\n"
+			message += "此 Apk Label 識別為「初次上傳」，已為您完成建檔。"
 		} else {
 			message += fmt.Sprintf("此 Apk Label 識別為「初次上傳」，建檔時發生錯誤，Error： %s", err.Error())
 		}
@@ -113,7 +113,7 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	if err != nil {
 		log.Fatal(err) // Log待補
 		fmt.Println(err)
-		message += fmt.Sprintf("刪除檔案時發生錯誤，Error : %s \n", err.Error())
+		message += fmt.Sprintf("刪除檔案時發生錯誤，Error : %s ", err.Error())
 	} else {
 		fmt.Println("已刪除暫存檔案")
 	}
@@ -137,14 +137,14 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	if 1 > len(results) {
 		//查無結果
 		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"isSuccess": true,
+			"issuccess": true,
 			"message":   message,
 			"appsInfo":  results,
 		})
 	} else {
 		//有查到結果
 		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"isSuccess": true,
+			"issuccess": true,
 			"message":   message,
 			"appsInfo":  results[0],
 		})

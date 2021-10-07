@@ -249,12 +249,12 @@ func postReanalyseAPIHandler(apiServer *APIServer, ginContextPointer *gin.Contex
 			// 更新APK資訊到資料庫（pkgName、versionCode、VersionName）
 			results := mongoDB.FindOneAndUpdateAppsInfoSET(
 				bson.M{
-					"apkDirectoryName": parametersApkDirectoryName,
+					"apkdirectoryname": parametersApkDirectoryName,
 				},
 				bson.M{
-					"packageName":     pkgName,
-					"lastVersionCode": versionCode,
-					"lastVersionName": VersionName,
+					"packagename":     pkgName,
+					"lastversioncode": versionCode,
+					"lastversionname": VersionName,
 				})
 
 			// 重找新找此筆資料
