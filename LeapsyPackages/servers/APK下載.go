@@ -77,7 +77,7 @@ func getAPPsAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
 		go func() {
 
 			// 檔案存在會取得APK檔名
-			isError, apkFileName = isFileNotExistedAndGetApkFileNameByDirectoryName(parametersLabelName)
+			isError, apkFileName = isFileNotExistedAndGetApkFileNameByLabelName(parametersLabelName)
 			// isError = isFileNotExisted(parametersDownladKeyword)
 
 			isToWorkChannel <- !isError
@@ -170,139 +170,10 @@ type ReanalyseAPI struct {
 	Data      records.AppsInfo
 }
 
-// 有上傳功能之後不需要了 先棄用 不改寫
-// postReanalyseAPIHandler 重新解析某資料夾下的APK
-/**
- * @param  *APIServer apiServer API伺服器指標
- * @param  *gin.Context ginContextPointer  gin Context 指標
- */
-// func postReanalyseAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
-
-// 	// 參數格式
-// 	type Parameters struct {
-
-// 		// 指定資料夾名稱
-// 		ApkDirectoryName string `form:"apkDirectoryName" json:"apkDirectoryName" binding:"required"`
-// 	}
-
-// 	// 接收客戶端之參數
-// 	var parameters Parameters
-
-// 	// 轉譯json參數
-// 	bindJSONError := ginContextPointer.ShouldBindJSON(&parameters)
-
-// 	bindURIError := ginContextPointer.ShouldBindUri(&parameters)
-
-// 	defaultArgs :=
-// 		append(
-// 			network.GetAliasAddressPair(
-// 				fmt.Sprintf(`%s:%d`,
-// 					apiServer.GetConfigValueOrPanic(`host`),
-// 					apiServer.GetConfigPositiveIntValueOrPanic(`port`),
-// 				),
-// 			),
-// 			ginContextPointer.ClientIP(),
-// 			ginContextPointer.FullPath(),
-// 			parameters,
-// 		)
-
-// 	// log
-// 	logings.SendLog(
-// 		[]string{`%s %s 接受 %s 請求 %s %+v `},
-// 		defaultArgs,
-// 		nil,
-// 		0,
-// 	)
-
-// 	// 取得各參數值
-// 	parametersApkDirectoryName := parameters.ApkDirectoryName
-
-// 	fmt.Println("測試：已取得參數 parametersApkDirectoryName=", parametersApkDirectoryName)
-
-// 	// 若順利取出 則進行密碼驗證
-// 	if bindJSONError == nil && bindURIError == nil {
-
-// 		fmt.Println("取參數正確")
-
-// 		isNotExitsted, apkFileName := isFileNotExistedAndGetApkFileNameByDirectoryName(parametersApkDirectoryName)
-
-// 		// 檔案若不在
-// 		if isNotExitsted {
-
-// 			// Response
-// 			responseResult := ReanalyseAPI{
-// 				IsSuccess: false,
-// 				Results:   "此資料夾或APK檔不存在",
-// 				Data:      records.AppsInfo{},
-// 			}
-
-// 			ginContextPointer.JSON(http.StatusOK, responseResult)
-
-// 		} else {
-// 			// 檔案存在
-
-// 			// 進行APK分析
-// 			pkgName, appLabel, versionCode, VersionName := getApkDetailsInApkDirectory(parametersApkDirectoryName, apkFileName)
-// 			fmt.Printf("解析並取得APK詳細資料：pkgName=%s, appLabel=%s, versionCode=%d, VersionName=%s \n\n", pkgName, appLabel, versionCode, VersionName)
-
-// 			// 更新APK資訊到資料庫（pkgName、versionCode、VersionName）
-// 			results := mongoDB.FindOneAndUpdateAppsInfoSET(
-// 				bson.M{
-// 					"apkdirectoryname": parametersApkDirectoryName,
-// 				},
-// 				bson.M{
-// 					"packagename":     pkgName,
-// 					"lastversioncode": versionCode,
-// 					"lastversionname": VersionName,
-// 				})
-
-// 			// 重找新找此筆資料
-// 			// results := mongoDB.FindAppsInfoByApkDirectoryName(parametersApkDirectoryName)
-
-// 			// Response
-// 			responseResult := ReanalyseAPI{
-// 				IsSuccess: true,
-// 				Results:   "解析成功",
-// 				Data:      results[0],
-// 			}
-
-// 			ginContextPointer.JSON(http.StatusOK, responseResult)
-// 		}
-
-// 	} else if bindJSONError != nil {
-
-// 		fmt.Println("取參數錯誤,錯誤訊息:bindJSONError=", bindJSONError, ",bindURIError=", bindURIError)
-
-// 		// 包成回給前端的格式
-// 		myResult := ReanalyseAPI{
-// 			IsSuccess: false,
-// 			Results:   "解析失敗",
-// 			Data:      records.AppsInfo{},
-// 		}
-
-// 		// 回應給前端
-// 		ginContextPointer.JSON(http.StatusNotFound, myResult)
-
-// 		// log
-
-// 		logings.SendLog(
-// 			[]string{`%s %s 回應 %s 請求 %s %+v: 驗證失敗-取參數錯誤(參數有少或格式錯誤), bindJSONError=%s, bindURIError=%s`},
-// 			append(
-// 				defaultArgs,
-// 				bindJSONError,
-// 				bindURIError,
-// 			),
-// 			nil,              // 無錯誤
-// 			logrus.InfoLevel, // info等級的log
-// 		)
-// 	}
-
-// }
-
-func getApkDetailsInApkDirectory(apkDirectoryName string, apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
+func getApkDetailsByLabelName(labelName string, apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
 
 	// 讀取apk
-	pkg, _ := apk.OpenFile("./apk/" + apkDirectoryName + "/" + apkFileName)
+	pkg, _ := apk.OpenFile("./apk/" + labelName + "/" + apkFileName)
 	defer pkg.Close()
 
 	// // icon image to base64 string

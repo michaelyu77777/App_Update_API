@@ -41,29 +41,6 @@ func (mongoDB *MongoDB) FindAppsInfoByProjectNameAndAppName(projectName string, 
 
 /**以下為複製過來的函數**/
 
-// 尋找所有 apps info
-// func (mongoDB *MongoDB) FindAllAppsInfo() (results []records.AppsInfo) {
-
-// 	// 回傳結果
-// 	results = mongoDB.findAppsInfo(
-// 		bson.M{},
-// 	)
-
-// 	return // 回傳
-// }
-
-// 尋找符合的專案名稱,app名稱
-func (mongoDB *MongoDB) FindAppsInfoByApkDirectoryName(apkDirectoryName string) (results []records.AppsInfo) {
-
-	// 回傳結果
-	results = mongoDB.findAppsInfo(
-		bson.M{
-			"apkdirectoryname": apkDirectoryName,
-		},
-	)
-
-	return // 回傳
-}
 
 // 尋找符合的專案名稱,app名稱
 func (mongoDB *MongoDB) FindAppsInfoByLabelName(labelName string) (results []records.AppsInfo) {

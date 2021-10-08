@@ -25,7 +25,7 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		return
 	}
 
-	// 暫存APK
+	// 暫存檔案
 	tempFileName := header.Filename // 取出檔名
 	saveTempPath := configurations.GetConfigValueOrPanic(`local`, `pathTemp`)
 	saveFileToPath(file, saveTempPath, tempFileName)
@@ -103,6 +103,13 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		}
 	}
 
+	// 再收一次檔案,歸檔到正式LableName的資料夾
+	file, header, err = ginContextPointer.Request.FormFile("file")
+	if err != nil {
+		ginContextPointer.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+		return
+	}
+
 	// 存檔：命名為 label + V_ + versionName
 	apkName := labelName + "_v" + versionName + ".apk"
 	savePath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
@@ -167,13 +174,24 @@ func isExists(path string) (bool, error) {
 // 儲存檔案,用指定檔名,存到指定路徑
 func saveFileToPath(file multipart.File, path string, fileName string) {
 
+	//測試碼 取得大小
+	switch t := file.(type) {
+	case *os.File:
+		fi, _ := t.Stat()
+		fmt.Println(fi.Size())
+		fmt.Println("測試:儲存的檔案大小")
+	default:
+		fmt.Println("測試:預設")
+		// Do Something
+	}
+
 	out, err := os.Create(path + fileName) // 建立空檔
-	defer out.Close()
 
 	if err != nil {
 		log.Fatal(err) // Log待補
 		fmt.Println(err)
 	}
+	defer out.Close()
 
 	_, err = io.Copy(out, file) // 將file數據複製到空檔
 

@@ -463,13 +463,13 @@ func isLowerCaseOrDigit(inputString string) (result bool) {
  * @param  string downloadKeyword apps代號
  * @return bool result 結果
  */
-func isFileNotExistedByDirectoryName(downloadKeyword string) (result bool) {
+func isFileNotExistedByLabelName(labelName string) (result bool) {
 
 	// 查資料夾是否不在
-	directoryName := downloadKeyword // 指定apk資料夾名稱
+	directoryName := labelName // 指定apk資料夾名稱
 
 	// 去資料庫查此資料夾名稱所對應的APK檔名
-	appsInfo := mongoDB.FindAppsInfoByApkDirectoryName(directoryName)
+	appsInfo := mongoDB.FindAppsInfoByLabelName(labelName)
 
 	// 找不到此APP
 	if 1 > len(appsInfo) {
@@ -499,7 +499,7 @@ func isFileNotExistedByDirectoryName(downloadKeyword string) (result bool) {
  * @param  string downloadKeyword apps代號
  * @return bool result 結果 apkFileName APK檔名
  */
-func isFileNotExistedAndGetApkFileNameByDirectoryName(labelName string) (result bool, apkFileName string) {
+func isFileNotExistedAndGetApkFileNameByLabelName(labelName string) (result bool, apkFileName string) {
 
 	// 去資料庫查此資料夾名稱所對應的APK檔名
 	appsInfo := mongoDB.FindAppsInfoByLabelName(labelName)
@@ -562,13 +562,10 @@ func isAuthorized(ginContextPointer *gin.Context) (result bool) {
  * @param  *gin.Context ginContextPointer  gin Context 指標
  * @param  string fileNameString 檔名字串
  */
-func attachCybLicenseBin(ginContextPointer *gin.Context, downladKeyword string) {
-
-	// 指定apk資料夾名稱
-	directoryName := downladKeyword
+func attachCybLicenseBin(ginContextPointer *gin.Context, labelName string) {
 
 	// 去資料庫查此資料夾名稱所對應的APK檔名
-	result := mongoDB.FindAppsInfoByApkDirectoryName(directoryName)
+	result := mongoDB.FindAppsInfoByLabelName(labelName)
 	// apkFileName := `camera.apk`
 
 	// 沒找到
@@ -583,7 +580,7 @@ func attachCybLicenseBin(ginContextPointer *gin.Context, downladKeyword string) 
 		downloadFileName := apkFileName
 
 		// 下載
-		ginContextPointer.FileAttachment(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`))+directoryName+`/`+apkFileName, downloadFileName)
+		ginContextPointer.FileAttachment(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`))+labelName+`/`+apkFileName, downloadFileName)
 	}
 
 }
@@ -593,13 +590,13 @@ func attachCybLicenseBin(ginContextPointer *gin.Context, downladKeyword string) 
  * @param  *gin.Context ginContextPointer  gin Context 指標 directoryName 想下載的apk資料夾名稱 apkFileName 想下載的APK檔案名稱
  * @param  string fileNameString 檔名字串
  */
-func attachApkFile(ginContextPointer *gin.Context, apkDirectoryName string, apkFileName string) {
+func attachApkFile(ginContextPointer *gin.Context, labelName string, apkFileName string) {
 
 	// 下載檔案名稱
 	downloadFileName := apkFileName
 
 	// 下載
-	ginContextPointer.FileAttachment(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`))+apkDirectoryName+`/`+apkFileName, downloadFileName)
+	ginContextPointer.FileAttachment(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`))+labelName+`/`+apkFileName, downloadFileName)
 
 }
 

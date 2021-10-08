@@ -37,8 +37,8 @@ type AppsInfoCommonStruct struct {
 // 軟體資訊(DB用)
 type AppsInfo struct {
 	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
-	ApkDirectoryName     string           `json:"apkdirectoryname"` // 存放APK資料夾名稱
-	ApkFileName          string           `json:"apkfilename"`      // APK檔案名稱
+
+	ApkFileName string `json:"apkfilename"` // APK檔案名稱
 	// LabelName        string `json:"labelname"`        // APK Label名稱
 }
 
@@ -79,8 +79,8 @@ func (appsInfo AppsInfo) PrimitiveM() (returnPrimitiveM primitive.M) {
 		`changebriefjpn`: appsInfo.ChangeBriefJpn,
 		`changebriefkor`: appsInfo.ChangeBriefKor,
 
-		`apkdirectoryname`: appsInfo.ApkDirectoryName, // 存放APK資料夾名稱
-		`apkfilename`:      appsInfo.ApkFileName,      // APK檔案名稱
+		`apkfilename`: appsInfo.ApkFileName, // APK檔案名稱
+
 	}
 
 	return
