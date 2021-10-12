@@ -94,7 +94,7 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 			message += "創建資料夾時發生錯誤"
 
 			ginContextPointer.JSON(http.StatusOK, gin.H{
-				"isSuccess": false,
+				"issuccess": false,
 				"message":   message,
 			})
 
@@ -146,14 +146,14 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		ginContextPointer.JSON(http.StatusOK, gin.H{
 			"issuccess": true,
 			"message":   message,
-			"appsInfo":  results,
+			"appsinfo":  results,
 		})
 	} else {
 		//有查到結果
 		ginContextPointer.JSON(http.StatusOK, gin.H{
 			"issuccess": true,
 			"message":   message,
-			"appsInfo":  results[0],
+			"appsinfo":  results[0],
 		})
 	}
 

@@ -88,7 +88,7 @@ func (appsInfo AppsInfo) PrimitiveM() (returnPrimitiveM primitive.M) {
 
 // 包成回給前端<取AppsInfo格式>
 type AppsInfoResponse struct {
-	IsSuccess bool   `json:"isSuccess"` //錯誤代碼
+	IsSuccess bool   `json:"issuccess"` //錯誤代碼
 	Results   string `json:"results"`   //錯誤訊息
 	// Data      []AppsInfo `json:"data"`      //查詢結果
 	Data []AppsInfoWithDownloadPath `json:"data"` //查詢結果
@@ -96,6 +96,6 @@ type AppsInfoResponse struct {
 
 // 回給前端<一般格式>
 type APIResponse struct {
-	IsSuccess bool   `json:"isSuccess"` //錯誤代碼
+	IsSuccess bool   `json:"issuccess"` //錯誤代碼
 	Results   string `json:"results"`   //錯誤訊息
 }
