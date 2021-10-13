@@ -80,7 +80,7 @@ func (apiServer *APIServer) start() {
 	enginePointer.POST(
 		`/appUpdate/file/uploadSingle`,
 		func(ginContextPointer *gin.Context) {
-			UploadSingleIndex(apiServer, ginContextPointer)
+			UploadSingleApkAPIHandler(apiServer, ginContextPointer)
 		},
 	)
 

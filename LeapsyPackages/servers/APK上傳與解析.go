@@ -6,16 +6,41 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"leapsy.com/packages/configurations"
+	"leapsy.com/packages/logings"
+	"leapsy.com/packages/network"
 	"leapsy.com/records"
 )
 
 //func UploadSingleIndex(ctx *gin.Context) {
-func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
+func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
+
+	// For logings
+	defaultArgs :=
+		append(
+			network.GetAliasAddressPair(
+				fmt.Sprintf(`%s:%d`,
+					apiServer.GetConfigValueOrPanic(`host`),
+					apiServer.GetConfigPositiveIntValueOrPanic(`port`),
+				),
+			),
+			ginContextPointer.ClientIP(),
+			ginContextPointer.FullPath(),
+		)
+
+	logings.SendLog(
+		[]string{`%s %s 接受 %s 請求 %s `},
+		defaultArgs,
+		nil,
+		0,
+	)
 
 	// 收檔案、表頭
 	file, header, err := ginContextPointer.Request.FormFile("file")
@@ -23,7 +48,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]apk收檔時發生錯誤，錯誤訊息如下，Error：%s。", err.Error())
-		fmt.Println(s)
+		// fmt.Println(s)
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
 			"issuccess": false,
@@ -38,7 +72,15 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	err, msg := saveFileToPath(file, saveTempPath, tempFileName)
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]儲存暫存apk檔時發生錯誤，錯誤訊息如下，Error：%s，Msg:%s。", err.Error(), msg)
-		fmt.Println(s)
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
 			"issuccess": false,
@@ -49,27 +91,43 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	fmt.Println("取出檔名＝" + tempFileName)
 
-	// // 取副檔名
-	// fileExtension := filepath.Ext(tempFileName)
+	// 取副檔名
+	fileExtension := filepath.Ext(tempFileName)
 
-	// // 檢核副檔名是否為APK（case insensitive）
-	// if !strings.EqualFold(fileExtension, ".apk") {
-	// 	s := "[檔案格式錯誤]非apk檔,判斷副檔名為" + fileExtension + "。"
-	// 	message += s
-	// 	fmt.Println(s)
-	// 	ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-	// 		"issuccess": false,
-	// 		"message":   message,
-	// 	})
-	// 	return
-	// }
+	// 檢核副檔名是否為APK（case insensitive）
+	if !strings.EqualFold(fileExtension, ".apk") {
+		s := "[錯誤]非apk檔,判斷副檔名為" + fileExtension + "。"
+		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
+		return
+	}
 
 	// 解析暫存APK
 	err, msg, packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
 
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]解析APK時發生錯誤，錯誤訊息如下，Error：%s，Msg：%s。", err.Error(), msg)
-		fmt.Println(s)
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
 			"issuccess": false,
@@ -103,12 +161,28 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 		if err == nil {
 			s := "[完成初次建檔]解析apk之Label識別為初次上傳。"
-			fmt.Println(s)
 			message += s
+
+			// log
+			logings.SendLog(
+				[]string{`%s %s 接受 %s 請求 %s %s`},
+				append(defaultArgs, s),
+				err,
+				logrus.InfoLevel,
+			)
+
 		} else {
 			s := fmt.Sprintf("[錯誤]資料庫初次建檔時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
-			fmt.Println(s)
 			message += s
+
+			// log
+			logings.SendLog(
+				[]string{`%s %s 接受 %s 請求 %s %s`},
+				append(defaultArgs, s),
+				err,
+				logrus.WarnLevel,
+			)
+
 			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
 				"issuccess": false,
 				"message":   message,
@@ -124,23 +198,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	isFileExist, err := isExists(apkPath)
 	if err != nil {
 		s := fmt.Sprintf("[錯誤]判斷存檔Lable資料夾是否存在時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
-		fmt.Println(s)
 		message += s
 
-		// Log待補
-		// logings.SendLog(
-		// 	[]string{`%s %s 修改帳號密碼，Error= %+v `},
-		// 	append(defaultArgs, update),
-		// 	err,
-		// 	logrus.ErrorLevel,
-		// )
 		// log
-		// logings.SendLog(
-		// 	[]string{detail},
-		// 	[]interface{}{labelName},
-		// 	nil,
-		// 	logrus.WarnLevel,
-		// )
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 	}
 
 	// 「labelName」的資料夾若不存，則建立「labelName」資料夾
@@ -151,9 +218,15 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 		if err != nil {
 			s := fmt.Sprintf("[錯誤]創建名為Lable的資料夾時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
-			fmt.Println(s)
 			message += s
-			// Log待補
+
+			// log
+			logings.SendLog(
+				[]string{`%s %s 接受 %s 請求 %s %s`},
+				append(defaultArgs, s),
+				err,
+				logrus.WarnLevel,
+			)
 
 			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
 				"issuccess": false,
@@ -163,9 +236,15 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 		} else {
 			s := "[創建資料夾]已建立名為Label的資料夾。"
-			fmt.Println(s)
 			message += s
-			// Log待補
+
+			// log
+			logings.SendLog(
+				[]string{`%s %s 接受 %s 請求 %s %s`},
+				append(defaultArgs, s),
+				err,
+				logrus.InfoLevel,
+			)
 		}
 	}
 
@@ -173,8 +252,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	file, header, err = ginContextPointer.Request.FormFile("file")
 	if err != nil {
 		s := fmt.Sprintf("[錯誤]正式儲存apk檔時發生錯誤，錯誤訊息如下，Error：%s", err.Error())
-		fmt.Println(s)
 		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
 			"issuccess": false,
 			"message":   message,
@@ -189,8 +276,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]儲存正式apk檔時發生錯誤，錯誤訊息如下，Error：%s，Msg:%s。", err.Error(), msg)
-		fmt.Println(s)
 		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
 			"issuccess": false,
 			"message":   message,
@@ -203,12 +298,28 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	if err != nil {
 		// Log待補
 		s := fmt.Sprintf("[錯誤]刪除暫存Apk檔案時發生錯誤，錯誤訊息如下，Error：%s", err.Error())
-		fmt.Println(s)
 		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 	} else {
 		s := "[已刪除暫存檔案]"
-		fmt.Println(s)
 		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.InfoLevel,
+		)
+
 	}
 
 	// 將解析後的資訊，全部更新到對應app的appsinfo中
@@ -229,8 +340,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	if 1 > len(results) {
 		//查無結果
 		s := "[錯誤]資料庫查不到您上傳的APK建檔資料"
-		fmt.Println(s)
 		message += s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.WarnLevel,
+		)
+
 		ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
 			"issuccess": false,
 			"message":   message,
@@ -239,8 +358,16 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 	} else {
 		//有查到結果
 		s := "[您已完成APK檔案上傳,並於資料庫建檔或更新資料]"
-		fmt.Println(s)
 		message = s
+
+		// log
+		logings.SendLog(
+			[]string{`%s %s 接受 %s 請求 %s %s`},
+			append(defaultArgs, s),
+			err,
+			logrus.InfoLevel,
+		)
+
 		ginContextPointer.JSON(http.StatusOK, gin.H{
 			"issuccess": true,
 			"message":   message,
@@ -265,25 +392,23 @@ func isExists(path string) (bool, error) {
 // 儲存檔案,用指定檔名,存到指定路徑
 func saveFileToPath(file multipart.File, path string, fileName string) (err error, msg string) {
 
-	//測試碼 取得大小
-	switch t := file.(type) {
-	case *os.File:
-		fi, _ := t.Stat()
-		fmt.Println(fi.Size())
-		fmt.Println("測試:儲存的檔案大小")
-	default:
-		fmt.Println("測試:預設")
-		// Do Something
-	}
+	// //測試碼 取得大小
+	// switch t := file.(type) {
+	// case *os.File:
+	// 	fi, _ := t.Stat()
+	// 	fmt.Println(fi.Size())
+	// 	fmt.Println("測試:儲存的檔案大小")
+	// default:
+	// 	fmt.Println("測試:預設")
+	// 	// Do Something
+	// }
 
 	out, err := os.Create(path + fileName) // 建立空檔
 	defer out.Close()
 
 	if err != nil {
-		// Log待補
 		s := fmt.Sprintf("[錯誤]建立空檔，發生錯誤，錯誤：%s。", err.Error())
 		msg += s
-		fmt.Println(s)
 		return
 	}
 
