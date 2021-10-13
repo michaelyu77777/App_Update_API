@@ -3,7 +3,6 @@ package servers
 import (
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -20,27 +19,68 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	// 收檔案、表頭
 	file, header, err := ginContextPointer.Request.FormFile("file")
-	if err != nil {
-		ginContextPointer.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+	message := ""
+
+	if nil != err {
+		s := fmt.Sprintf("[錯誤]apk收檔時發生錯誤，錯誤訊息如下，Error：%s。", err.Error())
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
 		return
 	}
 
 	// 暫存檔案
 	tempFileName := header.Filename // 取出檔名
 	saveTempPath := configurations.GetConfigValueOrPanic(`local`, `pathTemp`)
-	saveFileToPath(file, saveTempPath, tempFileName)
+	err, msg := saveFileToPath(file, saveTempPath, tempFileName)
+	if nil != err {
+		s := fmt.Sprintf("[錯誤]儲存暫存apk檔時發生錯誤，錯誤訊息如下，Error：%s，Msg:%s。", err.Error(), msg)
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
+		return
+	}
 
 	fmt.Println("取出檔名＝" + tempFileName)
 
+	// // 取副檔名
+	// fileExtension := filepath.Ext(tempFileName)
+
+	// // 檢核副檔名是否為APK（case insensitive）
+	// if !strings.EqualFold(fileExtension, ".apk") {
+	// 	s := "[檔案格式錯誤]非apk檔,判斷副檔名為" + fileExtension + "。"
+	// 	message += s
+	// 	fmt.Println(s)
+	// 	ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+	// 		"issuccess": false,
+	// 		"message":   message,
+	// 	})
+	// 	return
+	// }
+
 	// 解析暫存APK
-	packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
-	//_, labelName, _, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+	err, msg, packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+
+	if nil != err {
+		s := fmt.Sprintf("[錯誤]解析APK時發生錯誤，錯誤訊息如下，Error：%s，Msg：%s。", err.Error(), msg)
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
+
+		return
+	}
 
 	// 查找是否已建檔
 	result := mongoDB.FindAppsInfoByLabelName(labelName)
-
-	// 回傳給Client的訊息
-	message := ""
 
 	// 若沒建檔，則先建檔
 	if 1 > len(result) {
@@ -61,68 +101,114 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 		err := mongoDB.InsertOneAppsInfo(document)
 
-		fmt.Println("已完成初次建檔")
-
 		if err == nil {
-			message += "此 Apk Label 識別為「初次上傳」，已為您完成建檔。"
+			s := "[完成初次建檔]解析apk之Label識別為初次上傳。"
+			fmt.Println(s)
+			message += s
 		} else {
-			message += fmt.Sprintf("此 Apk Label 識別為「初次上傳」，建檔時發生錯誤，Error： %s", err.Error())
+			s := fmt.Sprintf("[錯誤]資料庫初次建檔時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
+			fmt.Println(s)
+			message += s
+			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
+				"issuccess": false,
+				"message":   message,
+			})
+			return
 		}
 	}
 
-	// 看apk儲存資料夾下是否存在名稱為「labelName」的資料夾
+	// 確認apk儲存資料夾下是否存在名稱為「labelName」的資料夾
 	apkPath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
 	// apkPath := "apk/" + labelName + "/"
 
 	isFileExist, err := isExists(apkPath)
 	if err != nil {
-		fmt.Println("判斷資料夾是否存在時發生錯誤：", err)
-		log.Fatal(err) // Log待補
+		s := fmt.Sprintf("[錯誤]判斷存檔Lable資料夾是否存在時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
+		fmt.Println(s)
+		message += s
+
+		// Log待補
+		// logings.SendLog(
+		// 	[]string{`%s %s 修改帳號密碼，Error= %+v `},
+		// 	append(defaultArgs, update),
+		// 	err,
+		// 	logrus.ErrorLevel,
+		// )
+		// log
+		// logings.SendLog(
+		// 	[]string{detail},
+		// 	[]interface{}{labelName},
+		// 	nil,
+		// 	logrus.WarnLevel,
+		// )
 	}
 
 	// 「labelName」的資料夾若不存，則建立「labelName」資料夾
 	if !isFileExist {
-		fmt.Println("LabelName資料夾不存在") // Log待補
 
 		//創建目錄
 		err = os.Mkdir(configurations.GetConfigValueOrPanic(`local`, `path`)+labelName, os.ModePerm)
 
 		if err != nil {
-			fmt.Println("創建資料夾時發生錯誤：", err)
-			log.Fatal(err) // Log待補
+			s := fmt.Sprintf("[錯誤]創建名為Lable的資料夾時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
+			fmt.Println(s)
+			message += s
+			// Log待補
 
-			message += "創建資料夾時發生錯誤"
-
-			ginContextPointer.JSON(http.StatusOK, gin.H{
+			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
 				"issuccess": false,
 				"message":   message,
 			})
+			return
 
 		} else {
-			fmt.Println("已創建新資料夾") // Log待補
+			s := "[創建資料夾]已建立名為Label的資料夾。"
+			fmt.Println(s)
+			message += s
+			// Log待補
 		}
 	}
 
 	// 再收一次檔案,歸檔到正式LableName的資料夾
 	file, header, err = ginContextPointer.Request.FormFile("file")
 	if err != nil {
-		ginContextPointer.String(http.StatusBadRequest, fmt.Sprintf("file err : %s", err.Error()))
+		s := fmt.Sprintf("[錯誤]正式儲存apk檔時發生錯誤，錯誤訊息如下，Error：%s", err.Error())
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
 		return
 	}
 
 	// 存檔：命名為 label + V_ + versionName
 	apkName := labelName + "_v" + versionName + ".apk"
 	savePath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
-	saveFileToPath(file, savePath, apkName)
+	err, msg = saveFileToPath(file, savePath, apkName)
+
+	if nil != err {
+		s := fmt.Sprintf("[錯誤]儲存正式apk檔時發生錯誤，錯誤訊息如下，Error：%s，Msg:%s。", err.Error(), msg)
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
+			"issuccess": false,
+			"message":   message,
+		})
+		return
+	}
 
 	// 刪除tempAPK檔
 	err = os.Remove(saveTempPath + tempFileName)
 	if err != nil {
-		log.Fatal(err) // Log待補
-		fmt.Println(err)
-		message += fmt.Sprintf("刪除檔案時發生錯誤，Error : %s ", err.Error())
+		// Log待補
+		s := fmt.Sprintf("[錯誤]刪除暫存Apk檔案時發生錯誤，錯誤訊息如下，Error：%s", err.Error())
+		fmt.Println(s)
+		message += s
 	} else {
-		fmt.Println("已刪除暫存檔案")
+		s := "[已刪除暫存檔案]"
+		fmt.Println(s)
+		message += s
 	}
 
 	// 將解析後的資訊，全部更新到對應app的appsinfo中
@@ -139,17 +225,22 @@ func UploadSingleIndex(apiServer *APIServer, ginContextPointer *gin.Context) {
 		})
 
 	// Response Client
-	message += "您已完成上傳檔案"
 
 	if 1 > len(results) {
 		//查無結果
-		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"issuccess": true,
+		s := "[錯誤]資料庫查不到您上傳的APK建檔資料"
+		fmt.Println(s)
+		message += s
+		ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
+			"issuccess": false,
 			"message":   message,
 			"appsinfo":  results,
 		})
 	} else {
 		//有查到結果
+		s := "[您已完成APK檔案上傳,並於資料庫建檔或更新資料]"
+		fmt.Println(s)
+		message = s
 		ginContextPointer.JSON(http.StatusOK, gin.H{
 			"issuccess": true,
 			"message":   message,
@@ -172,7 +263,7 @@ func isExists(path string) (bool, error) {
 }
 
 // 儲存檔案,用指定檔名,存到指定路徑
-func saveFileToPath(file multipart.File, path string, fileName string) {
+func saveFileToPath(file multipart.File, path string, fileName string) (err error, msg string) {
 
 	//測試碼 取得大小
 	switch t := file.(type) {
@@ -186,18 +277,25 @@ func saveFileToPath(file multipart.File, path string, fileName string) {
 	}
 
 	out, err := os.Create(path + fileName) // 建立空檔
+	defer out.Close()
 
 	if err != nil {
-		log.Fatal(err) // Log待補
-		fmt.Println(err)
+		// Log待補
+		s := fmt.Sprintf("[錯誤]建立空檔，發生錯誤，錯誤：%s。", err.Error())
+		msg += s
+		fmt.Println(s)
+		return
 	}
-	defer out.Close()
 
 	_, err = io.Copy(out, file) // 將file數據複製到空檔
 
 	if err != nil {
-		log.Fatal(err) // Log待補
-		fmt.Println(err)
+		// Log待補
+		s := fmt.Sprintf("[錯誤]將file數據複製到空檔，發生錯誤，錯誤：%s。", err.Error())
+		msg += s
+		fmt.Println(s)
+		return
 	}
 
+	return
 }

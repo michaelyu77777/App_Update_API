@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"leapsy.com/packages/configurations"
+
 	// "gopkg.in/mgo.v2/bson" //Michael
 	"leapsy.com/records"
 
@@ -170,13 +172,13 @@ type ReanalyseAPI struct {
 	Data      records.AppsInfo
 }
 
-func getApkDetailsByLabelName(labelName string, apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
+func getApkDetailsByLabelName(labelName string, apkFileName string) (pkgName string, labelNameOut string, versionCode int, versionName string) {
 
 	// 讀取apk
-	pkg, _ := apk.OpenFile("./apk/" + labelName + "/" + apkFileName)
+	pkg, _ := apk.OpenFile(configurations.GetConfigValueOrPanic("local", "pathTemp") + labelName + "/" + apkFileName)
 	defer pkg.Close()
 
-	// // icon image to base64 string
+	// icon image to base64 string
 	// icon, _ := pkg.Icon(nil) // returns the icon of APK as image.Image
 	// fmt.Println("圖標：icon", icon)
 
@@ -201,8 +203,8 @@ func getApkDetailsByLabelName(labelName string, apkFileName string) (pkgName str
 	}
 
 	// appLabel
-	appLabel, _ = pkg.Label(resConfigEN) // get app label for en translation
-	fmt.Println("appLabel=<" + appLabel + ">")
+	labelNameOut, _ = pkg.Label(resConfigEN) // get app label for en translation
+	fmt.Println("labelNameOut=<" + labelNameOut + ">")
 
 	// versionCode
 	mainfest := pkg.Manifest()
@@ -225,11 +227,19 @@ func getApkDetailsByLabelName(labelName string, apkFileName string) (pkgName str
 	return
 }
 
-func getApkDetailsInApkTempDirectory(apkFileName string) (pkgName string, appLabel string, versionCode int, versionName string) {
+func getApkDetailsInApkTempDirectory(apkFileName string) (err error, message string, pkgName string, labelName string, versionCode int, versionName string) {
 
 	// 讀取apk
-	pkg, _ := apk.OpenFile("./apkTemp/" + apkFileName)
+	path := configurations.GetConfigValueOrPanic("local", "pathTemp") + apkFileName
+	pkg, err := apk.OpenFile(path)
 	defer pkg.Close()
+	if nil != err {
+		//log
+		s := fmt.Sprintf("[錯誤]開啟APK錯誤，路徑：%s，Error：%s", path, err.Error())
+		message += s
+		fmt.Println(s)
+		return
+	}
 
 	// // icon image to base64 string
 	// icon, _ := pkg.Icon(nil) // returns the icon of APK as image.Image
@@ -255,23 +265,52 @@ func getApkDetailsInApkTempDirectory(apkFileName string) (pkgName string, appLab
 		Language: [2]uint8{uint8('e'), uint8('n')},
 	}
 
-	// appLabel
-	appLabel, _ = pkg.Label(resConfigEN) // get app label for en translation
-	fmt.Println("appLabel=<" + appLabel + ">")
+	// labelName
+	labelName, err = pkg.Label(resConfigEN) // get app label for en translation
+	if nil != err {
+		//log
+		s := fmt.Sprintf("[錯誤]解析APK-Label值，發生錯誤，錯誤：%s。", err.Error())
+		message += s
+		fmt.Println(s)
+		return
+	} else {
+		s := "[取得labelName]" + labelName
+		fmt.Println(s)
+		message += s
+	}
 
 	// versionCode
 	mainfest := pkg.Manifest()
 	fmt.Printf("versionCode=<%+v>\n", mainfest.VersionCode)
 	vCode, err := mainfest.VersionCode.Int32()
-	versionCode = int(vCode) // int32轉成int
-	fmt.Printf("versionCode value=<%d>\n", vCode)
-	fmt.Println("err=", err)
+	if nil != err {
+		//log
+		s := fmt.Sprintf("[錯誤]解析APK-VersionCode值，發生錯誤，錯誤：%s。", err.Error())
+		fmt.Println(s)
+		message += s
+		return
+	} else {
+		s := "[取得VersionCode]" + fmt.Sprint(vCode)
+		fmt.Println(s)
+		message += s
+	}
+
+	// versionCode:int32轉成int for return
+	versionCode = int(vCode)
 
 	// VersionName
-	fmt.Printf("VersionName=<%+v> \n", mainfest.VersionName)
 	versionName, err = mainfest.VersionName.String()
-	fmt.Printf("VersionName value=<%s> \n", versionName)
-	fmt.Println("err=", err)
+	if nil != err {
+		//log
+		s := fmt.Sprintf("[錯誤]解析APK-VersionName值，發生錯誤，錯誤：%s。", err.Error())
+		fmt.Println(s)
+		message += s
+		return
+	} else {
+		s := "[取得VersionName]" + versionName
+		fmt.Println(s)
+		message += s
+	}
 
 	// mainActivity
 	// mainActivity, err := pkg.MainActivity()
