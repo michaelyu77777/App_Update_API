@@ -14,6 +14,9 @@ func StartServer() {
 	// log
 	go logings.StartLogging()
 
+	// 啟動下載事件紀錄
+	go StartUpdatingEvents()
+
 	var (
 		apiServer APIServer // API伺服器
 		// ecsDB               databases.ECSDB      // 來源資料庫

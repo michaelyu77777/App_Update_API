@@ -8,5 +8,5 @@ import (
 
 // main - 主程式
 func main() {
-	servers.StartServer() // 啟動環控伺服器
+	servers.StartServer() // 啟動伺服器
 }
