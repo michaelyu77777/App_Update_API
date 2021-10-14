@@ -80,7 +80,7 @@ func (apiServer *APIServer) start() {
 	enginePointer.POST(
 		`/appUpdate/file/uploadSingle`,
 		func(ginContextPointer *gin.Context) {
-			UploadSingleApkAPIHandler(apiServer, ginContextPointer)
+			postSingleApkFileAPIHandler(apiServer, ginContextPointer)
 		},
 	)
 
@@ -240,123 +240,6 @@ func (apiServer *APIServer) GetConfigValueOrPanic(key string) string {
 func (apiServer *APIServer) GetConfigPositiveIntValueOrPanic(key string) int {
 	return configurations.GetConfigPositiveIntValueOrPanic(reflect.TypeOf(*apiServer).String(), key) // 回傳取得的設定檔區塊下關鍵字對應的值
 }
-
-// start - 啟動API伺服器
-// func (apiServer *APIServer) start() {
-
-// 	address := fmt.Sprintf(`%s:%d`,
-// 		apiServer.GetConfigValueOrPanic(`host`),
-// 		apiServer.GetConfigPositiveIntValueOrPanic(`port`),
-// 	) // 預設主機
-
-// 	network.SetAddressAlias(address, `API伺服器`) // 設定預設主機別名
-
-// 	gin.SetMode(gin.ReleaseMode)
-
-// 	enginePointer := gin.Default()
-
-// 	enginePointer.GET(
-// 		`/appUpdate/download/:downloadKeyword`,
-// 		func(ginContextPointer *gin.Context) {
-// 			getAPPsAPIHandler(apiServer, ginContextPointer)
-// 		},
-// 	)
-
-// 	// 重新解析APK某資料夾的檔案
-// 	enginePointer.POST(
-// 		`/appUpdate/postReanalyse`,
-// 		func(ginContextPointer *gin.Context) {
-// 			postReanalyseAPIHandler(apiServer, ginContextPointer)
-// 		},
-// 	)
-
-// 	// enginePointer.GET(
-// 	// 	`/:macAddress/CybLicense.bin`,
-// 	// 	func(ginContextPointer *gin.Context) {
-// 	// 		getMacAddressCybLicenseBinAPIHandler(apiServer, ginContextPointer)
-// 	// 	},
-// 	// )
-
-// 	// enginePointer.PUT(
-// 	// 	`/:macAddress/CybLicense.bin`,
-// 	// 	func(ginContextPointer *gin.Context) {
-// 	// 		putMacAddressCybLicenseBinAPIHandler(apiServer, ginContextPointer)
-// 	// 	},
-// 	// )
-
-// 	// enginePointer.DELETE(
-// 	// 	`/:macAddress/CybLicense.bin`,
-// 	// 	func(ginContextPointer *gin.Context) {
-// 	// 		deleteMacAddressCybLicenseBinAPIHandler(apiServer, ginContextPointer)
-// 	// 	},
-// 	// )
-
-// 	apiServerPointer := &http.Server{
-// 		Addr:    address,
-// 		Handler: enginePointer,
-// 	} // 設定伺服器
-
-// 	apiServer.server = apiServerPointer // 儲存伺服器指標
-
-// 	var apiServerPtrListenAndServeError error // 伺服器啟動錯誤
-
-// 	go func() {
-// 		apiServerPtrListenAndServeError = enginePointer.Run(address) // 啟動伺服器或回傳伺服器啟動錯誤
-
-// 		// const (
-// 		// 	certPEMFileName = `cert.pem`
-// 		// 	keyPEMFileName  = `key.pem`
-// 		// )
-
-// 		// tlss.CreateCertAndKeyPEMFiles(certPEMFileName, keyPEMFileName)
-
-// 		// apiServerPtrListenAndServeError = enginePointer.RunTLS(address, certPEMFileName, keyPEMFileName) // 啟動伺服器或回傳伺服器啟動錯誤
-
-// 		// apiServerPtrListenAndServeError = enginePointer.RunTLS(address, configurations.GetConfigValueOrPanic(`local`, `cert-pem-path`), configurations.GetConfigValueOrPanic(`local`, `private-key-pem-path`))
-// 	}()
-
-// 	<-time.After(time.Second * 3) // 等待伺服器啟動結果
-
-// 	logings.SendLog(
-// 		[]string{`%s %s 啟動 `},
-// 		network.GetAliasAddressPair(address),
-// 		apiServerPtrListenAndServeError,
-// 		logrus.PanicLevel,
-// 	)
-
-// 	select {}
-
-// }
-
-// // stop - 結束API伺服器
-// func (apiServer *APIServer) stop() {
-
-// 	address := fmt.Sprintf(`%s:%d`,
-// 		apiServer.GetConfigValueOrPanic(`host`),
-// 		apiServer.GetConfigPositiveIntValueOrPanic(`port`),
-// 	) // 預設主機
-
-// 	logings.SendLog(
-// 		[]string{`%s %s 結束 `},
-// 		network.GetAliasAddressPair(address),
-// 		nil,
-// 		logrus.InfoLevel,
-// 	)
-
-// 	if nil == apiServer || nil == apiServer.server {
-// 		return
-// 	}
-
-// 	apiServerServerShutdownError := apiServer.server.Shutdown(context.TODO()) // 結束伺服器
-
-// 	logings.SendLog(
-// 		[]string{`%s %s 結束 `},
-// 		network.GetAliasAddressPair(address),
-// 		apiServerServerShutdownError,
-// 		logrus.PanicLevel,
-// 	)
-
-// }
 
 // SendEvent - 傳送事件
 /**

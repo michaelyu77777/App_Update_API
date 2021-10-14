@@ -24,7 +24,8 @@ import (
  * @param  apiServer *APIServer
  * @param  ginContextPointer *gin.Context  gin Context 指標
  */
-func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
+// func uploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
+func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issuccess bool) {
 
 	// For logings
 	defaultArgs :=
@@ -62,11 +63,13 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
+
 		return
 	}
 
@@ -85,9 +88,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
 		return
@@ -101,7 +105,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 	// 檢核副檔名是否為APK（case insensitive）
 	if !strings.EqualFold(fileExtension, ".apk") {
 		s := "[錯誤]非apk檔,判斷副檔名為" + fileExtension + "。"
-		message += s
 
 		// log
 		logings.SendLog(
@@ -111,8 +114,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
+		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
 		return
@@ -132,9 +137,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
 		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
 
@@ -177,7 +183,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 		} else {
 			s := fmt.Sprintf("[錯誤]資料庫初次建檔時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
-			message += s
 
 			// log
 			logings.SendLog(
@@ -187,8 +192,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 				logrus.WarnLevel,
 			)
 
+			issuccess = false
+			message += s
 			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
-				"issuccess": false,
+				"issuccess": issuccess,
 				"message":   message,
 			})
 			return
@@ -222,7 +229,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 		if err != nil {
 			s := fmt.Sprintf("[錯誤]創建名為Lable的資料夾時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
-			message += s
 
 			// log
 			logings.SendLog(
@@ -232,8 +238,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 				logrus.WarnLevel,
 			)
 
+			issuccess = false
+			message += s
 			ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
-				"issuccess": false,
+				"issuccess": issuccess,
 				"message":   message,
 			})
 			return
@@ -256,7 +264,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 	file, header, err = ginContextPointer.Request.FormFile("file")
 	if err != nil {
 		s := fmt.Sprintf("[錯誤]正式儲存apk檔時發生錯誤，錯誤訊息如下，Error：%s", err.Error())
-		message += s
 
 		// log
 		logings.SendLog(
@@ -266,8 +273,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
+		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
 		return
@@ -280,7 +289,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]儲存正式apk檔時發生錯誤，錯誤訊息如下，Error：%s，Msg:%s。", err.Error(), msg)
-		message += s
 
 		// log
 		logings.SendLog(
@@ -290,8 +298,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
+		message += s
 		ginContextPointer.JSON(http.StatusBadRequest, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 		})
 		return
@@ -344,7 +354,6 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 	if 1 > len(results) {
 		//查無結果
 		s := "[錯誤]資料庫查不到您上傳的APK建檔資料"
-		message += s
 
 		// log
 		logings.SendLog(
@@ -354,29 +363,157 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			logrus.WarnLevel,
 		)
 
+		issuccess = false
+		message += s
+
 		ginContextPointer.JSON(http.StatusInternalServerError, gin.H{
-			"issuccess": false,
+			"issuccess": issuccess,
 			"message":   message,
 			"appsinfo":  results,
 		})
-	} else {
-		//有查到結果
-		s := "[您已完成APK檔案上傳,並於資料庫建檔或更新資料]"
-		message = s
 
-		// log
-		logings.SendLog(
-			[]string{`%s %s 接受 %s 請求 %s %s`},
-			append(defaultArgs, s),
-			err,
-			logrus.InfoLevel,
+		return
+	}
+
+	//有查到結果
+	s := "[您已完成APK檔案上傳,並於資料庫建檔或更新資料]"
+
+	// log
+	logings.SendLog(
+		[]string{`%s %s 接受 %s 請求 %s %s`},
+		append(defaultArgs, s),
+		err,
+		logrus.InfoLevel,
+	)
+
+	issuccess = true
+	message = s
+	ginContextPointer.JSON(http.StatusOK, gin.H{
+		"issuccess": issuccess,
+		"message":   message,
+		"appsinfo":  results[0],
+	})
+
+	return
+
+}
+
+// // putMacAddressCybLicenseBinAPIHandler - 更新授權檔
+// /**
+//  * @param  *APIServer apiServer API伺服器指標
+//  * @param  *gin.Context ginContextPointer  gin Context 指標
+//  */
+// func putMacAddressCybLicenseBinAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
+func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
+
+	eventTime := time.Now()
+
+	isStatusBadRequestErrorChannel := make(chan bool, 1)
+
+	isStatusForbiddenErrorChannel := make(chan bool, 1)
+
+	httpStatusChannel := make(chan int, 1)
+
+	// var parameters Parameters
+	_, header, fileError := ginContextPointer.Request.FormFile("file")
+
+	// bindError := ginContextPointer.ShouldBind(&parameters)
+
+	// bindURIError := ginContextPointer.ShouldBindUri(&parameters)
+
+	isError := nil != fileError
+	isStatusBadRequestErrorChannel <- isError
+
+	if !isError {
+
+		// isToWorkChannel := make(chan bool, 1)
+
+		//parametersMacAddress := parameters.MacAddress
+
+		// go func() {
+
+		// 	isError = !isLowerCaseOrDigit(parametersMacAddress)
+
+		// 	isToWorkChannel <- !isError
+
+		// 	isStatusBadRequestErrorChannel <- isError
+
+		// }()
+
+		// 未來若需要驗證再說
+		// go func() {
+
+		// 	isError = !isAuthorized(ginContextPointer)
+
+		// 	isToWorkChannel <- !isError
+		// 	isStatusForbiddenErrorChannel <- isError
+
+		// }()
+
+		go func() {
+
+			// isToWork := true
+
+			// for counter := 1; counter <= 2; counter++ {
+			// 	isToWork = isToWork && <-isToWorkChannel
+			// }
+
+			// if isToWork {
+
+			// if upsertCybLicenseBin(ginContextPointer, parametersMacAddress) {
+			if uploadSingleApk(apiServer, ginContextPointer) {
+				httpStatusChannel <- http.StatusNoContent
+			} else {
+				httpStatusChannel <- http.StatusInternalServerError
+			}
+
+			// }
+
+		}()
+
+	}
+
+	go func() {
+
+		for {
+
+			if <-isStatusBadRequestErrorChannel {
+				httpStatusChannel <- http.StatusBadRequest
+			}
+
+		}
+
+	}()
+
+	go func() {
+
+		for {
+
+			if <-isStatusForbiddenErrorChannel {
+				httpStatusChannel <- http.StatusForbidden
+			}
+
+		}
+
+	}()
+
+	for {
+
+		httpStatus := <-httpStatusChannel
+
+		SendEvent(
+			eventTime,
+			ginContextPointer,
+			header, //上傳檔案的header
+			nil,
+			httpStatus,
+			APIResponse{},
 		)
 
-		ginContextPointer.JSON(http.StatusOK, gin.H{
-			"issuccess": true,
-			"message":   message,
-			"appsinfo":  results[0],
-		})
+		ginContextPointer.Status(httpStatus)
+
+		return
+
 	}
 
 }
