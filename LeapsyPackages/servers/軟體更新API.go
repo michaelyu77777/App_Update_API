@@ -20,10 +20,10 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 	type Parameters struct {
 
 		//帳戶資訊
-		UserID       string `form:"userID" json:"userID" binding:"required"`
-		UserPassword string `form:"userPassword" json:"userPassword" binding:"required"`
-		DeviceID     string `form:"deviceID" json:"deviceID" binding:"required"`
-		DeviceBrand  string `form:"deviceBrand" json:"deviceBrand" binding:"required"`
+		UserID       string `form:"userid" json:"userid" binding:"required"`
+		UserPassword string `form:"userpassword" json:"userpassword" binding:"required"`
+		DeviceID     string `form:"deviceid" json:"deviceid" binding:"required"`
+		DeviceBrand  string `form:"devicebrand" json:"devicebrand" binding:"required"`
 
 		// ProjectName string `form:"projectName" json:"projectName" binding:"required"`
 		// AppName string `form:"appName" json:"appName" binding:"required"`

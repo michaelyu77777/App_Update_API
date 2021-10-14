@@ -34,7 +34,7 @@ func (mongoDB *MongoDB) FindAccountByUserID(userID string) (results []records.Ac
 	// 取得警報紀錄
 	// results = mongoDB.findAlertRecords(bson.M{}, options.Find().SetSort(bson.M{`alerteventtime`: -1}).SetBatchSize(int32(batchSize)))
 
-	results = mongoDB.findAccounts(bson.M{`userID`: userID})
+	results = mongoDB.findAccounts(bson.M{`userid`: userID})
 
 	return // 回傳
 }
@@ -259,10 +259,10 @@ func (mongoDB *MongoDB) UpdateOneAccountPassword(userPassword string, userID str
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
-			`userID`: userID,
+			`userid`: userID,
 		},
 		bson.M{
-			`userPassword`: userPassword,
+			`userpassword`: userPassword,
 		},
 	) // 更新的紀錄
 	// fmt.Println("標記：", bson.M{`deviceID`: deviceID, `deviceBrand`: deviceBrand}, bson.M{`area.$[]`: newAreaID})
@@ -284,7 +284,7 @@ func (mongoDB *MongoDB) UpdateOneAccountVerificationCode(verificationCode string
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
-			`userID`: userID,
+			`userid`: userID,
 		},
 		bson.M{
 			`verificationCode`: verificationCode,
@@ -309,10 +309,10 @@ func (mongoDB *MongoDB) UpdateOneAccountPasswordAndVerificationCodeValidPeriod(u
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
-			`userID`: userID,
+			`userid`: userID,
 		},
 		bson.M{
-			`userPassword`:                userPassword,
+			`userpassword`:                userPassword,
 			`verificationCodeValidPeriod`: validPeriod,
 			// `verificationCodeTime`: validPeriod,
 		},
@@ -336,13 +336,13 @@ func (mongoDB *MongoDB) UpdateOneAccountVerificationCodeAndVerificationCodeValid
 
 	updatedModelAccount := mongoDB.findOneAndUpdateAccountSET(
 		bson.M{
-			`userID`: userID,
+			`userid`: userID,
 		},
 		bson.M{
 			// `userPassword`:         userPassword,
 			// `verificationCodeTime`: validPeriod,
-			`verificationCode`:            verificationCode,
-			`verificationCodeValidPeriod`: validPeriod,
+			`verificationcode`:            verificationCode,
+			`verificationcodevalidperiod`: validPeriod,
 		},
 	) // 更新的紀錄
 	// fmt.Println("標記：", bson.M{`deviceID`: deviceID, `deviceBrand`: deviceBrand}, bson.M{`area.$[]`: newAreaID})

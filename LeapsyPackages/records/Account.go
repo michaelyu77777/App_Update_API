@@ -4,8 +4,8 @@ package records
 
 // Device - 警報紀錄
 type Account struct {
-	UserID       string // 使用者登入帳號
-	UserPassword string // 使用者登入密碼
+	UserID       string `json:"userid"`// 使用者登入帳號
+	UserPassword string `json:"userpassword"`// 使用者登入密碼
 }
 
 // PrimitiveM - 轉成primitive.M
