@@ -19,7 +19,11 @@ import (
 	"leapsy.com/records"
 )
 
-//func UploadSingleIndex(ctx *gin.Context) {
+// 處理APK上傳
+/**
+ * @param  apiServer *APIServer
+ * @param  ginContextPointer *gin.Context  gin Context 指標
+ */
 func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
 
 	// For logings
@@ -378,6 +382,10 @@ func UploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 }
 
 // 確認檔案或資料夾是否存在
+/**
+ * @param  path string 指定路徑
+ * return bool, error 結果,錯誤訊息
+ */
 func isExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -390,6 +398,12 @@ func isExists(path string) (bool, error) {
 }
 
 // 儲存檔案,用指定檔名,存到指定路徑
+/**
+ * @param file multipart.File 目標檔案
+ * @param path string 指定路徑
+ * @param fileName string 指定檔名
+ * return err, msg 錯誤,相關訊息
+ */
 func saveFileToPath(file multipart.File, path string, fileName string) (err error, msg string) {
 
 	// //測試碼 取得大小
