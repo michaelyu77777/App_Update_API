@@ -156,16 +156,17 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 		fmt.Println("未建檔")
 
 		// 建立一筆新的appsInfo
-		appsInfoCommonStruct := records.AppsInfoCommonStruct{
+		// appsInfo := records.AppsInfo{
+		document := records.AppsInfo{
 			PackageName:     packageName,
 			LabelName:       labelName,
 			LastVersionCode: versionCode,
 			LastVersionName: versionName,
 		}
 
-		document := records.AppsInfo{
-			AppsInfoCommonStruct: appsInfoCommonStruct,
-		}
+		// document := records.AppsInfo{
+		// 	AppsInfoCommonStruct: appsInfoCommonStruct,
+		// }
 
 		err := mongoDB.InsertOneAppsInfo(document)
 

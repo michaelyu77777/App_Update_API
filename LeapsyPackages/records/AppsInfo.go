@@ -7,7 +7,9 @@ import (
 
 /**從model搬過來的AppsInfo**/
 // 放 DB 與 Respone Client 共同會用到的參數
-type AppsInfoCommonStruct struct {
+// type AppsInfoCommonStruct struct {
+type AppsInfo struct {
+	
 	AppNameCht string `json:"appnamecht"` //軟體名稱 正體
 	AppNameChs string `json:"appnamechs"` //軟體名稱 簡體
 	AppNameEng string `json:"appnameeng"` //軟體名稱 英文
@@ -31,23 +33,25 @@ type AppsInfoCommonStruct struct {
 	ChangeBriefEng string `json:"changebriefeng"` //更新內容 簡述 英
 	ChangeBriefJpn string `json:"changebriefjpn"` //更新內容 簡述 日
 	ChangeBriefKor string `json:"changebriefkor"` //更新內容 簡述 韓
+
+	ApkFileName string `json:"apkfilename"` // APK檔案名稱
 }
 
 /*[改用] 新的結構*/
 // 軟體資訊(DB用)
-type AppsInfo struct {
-	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
+// type AppsInfo struct {
+// 	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
 
-	ApkFileName string `json:"apkfilename"` // APK檔案名稱
-	// LabelName        string `json:"labelname"`        // APK Label名稱
-}
+// 	ApkFileName string `json:"apkfilename"` // APK檔案名稱
+// 	// LabelName        string `json:"labelname"`        // APK Label名稱
+// }
 
 // 軟體資訊(Response client用)
-type AppsInfoWithDownloadPath struct {
-	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
+// type AppsInfoWithDownloadPath struct {
+// 	AppsInfoCommonStruct `bson:",inline"` //共用參數：會從DB拿、也會Response回Client的參數
 
-	DownloadPath string `json:"downloadpath"` // 組合出下載APK網址
-}
+// 	DownloadPath string `json:"downloadpath"` // 組合出下載APK網址
+// }
 
 // PrimitiveM - 轉成primitive.M
 /*
@@ -86,16 +90,10 @@ func (appsInfo AppsInfo) PrimitiveM() (returnPrimitiveM primitive.M) {
 	return
 }
 
-// 包成回給前端<取AppsInfo格式>
-type AppsInfoResponse struct {
-	IsSuccess bool   `json:"issuccess"` //錯誤代碼
-	Results   string `json:"results"`   //錯誤訊息
-	// Data      []AppsInfo `json:"data"`      //查詢結果
-	Data []AppsInfoWithDownloadPath `json:"data"` //查詢結果
-}
 
-// 回給前端<一般格式>
-type APIResponse struct {
-	IsSuccess bool   `json:"issuccess"` //錯誤代碼
-	Results   string `json:"results"`   //錯誤訊息
-}
+
+// // 回給前端<一般格式>
+// type APIResponse struct {
+// 	IsSuccess bool   `json:"issuccess"` //錯誤代碼
+// 	Results   string `json:"results"`   //錯誤訊息
+// }
