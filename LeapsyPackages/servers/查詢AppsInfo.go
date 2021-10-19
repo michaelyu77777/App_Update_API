@@ -38,7 +38,7 @@ type AppsInfoWithDownloadPath struct {
 	ChangeBriefJpn string `json:"changeBriefJpn"` //更新內容 簡述 日
 	ChangeBriefKor string `json:"changeBriefKor"` //更新內容 簡述 韓
 
-	ApkFileName  string `json:"apkFileName"`  // APK檔名
+	//ApkFileName  string `json:"apkFileName"`  // APK檔名
 	DownloadPath string `json:"downloadPath"` // 組合出下載APK網址
 }
 
@@ -157,7 +157,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 						ChangeBriefJpn: r.ChangeBriefJpn,
 						ChangeBriefKor: r.ChangeBriefKor,
 
-						ApkFileName: r.ApkFileName,
+						//ApkFileName: r.ApkFileName,
 					}
 
 					resultWithDownloadPath = append(resultWithDownloadPath, tempObject)
