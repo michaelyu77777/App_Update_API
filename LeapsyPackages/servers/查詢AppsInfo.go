@@ -130,6 +130,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			// 若有結果
 			if 0 < len(result) {
 
+				// 結果轉存成，客戶端所使用的json欄位（有大小寫）
 				for _, r := range result {
 
 					tempObject := AppsInfoWithDownloadPath{
@@ -156,8 +157,6 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 						ChangeBriefEng: r.ChangeBriefEng,
 						ChangeBriefJpn: r.ChangeBriefJpn,
 						ChangeBriefKor: r.ChangeBriefKor,
-
-						//ApkFileName: r.ApkFileName,
 					}
 
 					resultWithDownloadPath = append(resultWithDownloadPath, tempObject)
@@ -196,7 +195,7 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 
 			for i, _ := range resultWithDownloadPath {
 
-				// 組出APK下載網址
+				// 為每個結果，組出各APK的「下載網址」
 				downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].LabelName //downloadPath
 				resultWithDownloadPath[i].DownloadPath = downloadPath                                                          //寫回array
 

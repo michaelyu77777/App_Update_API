@@ -87,7 +87,8 @@ func (apiServer *APIServer) start() {
 	// 下載APK
 	enginePointer.GET(
 		// `/appUpdate/download/:downloadKeyword`,
-		`/appUpdate/download/:labelName`,
+		// `/appUpdate/download/:labelName`,
+		`/appUpdate/download/:packageName`,
 		func(ginContextPointer *gin.Context) {
 			getAPPsAPIHandler(apiServer, ginContextPointer)
 		},
@@ -194,7 +195,8 @@ func (apiServer *APIServer) stop() {
 type Parameters struct {
 	// MacAddress string `uri:"macAddress"`
 	// DownloadKeyword string `uri:"downloadKeyword"`
-	LabelName string `uri:"labelName"`
+	// LabelName string `uri:"labelName"`
+	PackageName string `uri:"packageName"`
 }
 
 // // APIResponse - API回應
@@ -382,25 +384,26 @@ func isFileNotExistedByLabelName(labelName string) (result bool) {
  * @param  string downloadKeyword apps代號
  * @return bool result 結果 apkFileName APK檔名
  */
-func isFileNotExistedAndGetApkFileNameByLabelName(labelName string) (result bool, apkFileName string) {
+// func isFileNotExistedAndGetApkFileNameByLabelName(labelName string) (result bool, apkFileName string) {
+func isFileNotExistedAndGetApkFileNameByPackageName(packageName string) (result bool, apkFileName string) {
 
 	// 去資料庫查此資料夾名稱所對應的APK檔名
-	appsInfo := mongoDB.FindAppsInfoByLabelName(labelName)
+	appsInfo := mongoDB.FindAppsInfoByPackageName(packageName)
 
 	// 找不到此APP
 	if 1 > len(appsInfo) {
 
-		detail := "資料庫中找不到存放資料夾名稱為<" + labelName + ">的APP"
+		detail := "資料庫中找不到存放資料夾名稱為<" + packageName + ">的APP"
 
 		// log
 		logings.SendLog(
 			[]string{detail},
-			[]interface{}{labelName},
+			[]interface{}{packageName},
 			nil,
 			logrus.WarnLevel,
 		)
 
-		fmt.Printf(detail+"\n", labelName)
+		fmt.Printf(detail+"\n", packageName)
 		result = true
 		return
 
@@ -409,12 +412,12 @@ func isFileNotExistedAndGetApkFileNameByLabelName(labelName string) (result bool
 		// 取出APK檔名
 		apkFileName = appsInfo[0].ApkFileName
 
-		fmt.Println("查詢labelName=" + labelName)
+		fmt.Println("查詢labelName=" + packageName)
 		fmt.Println("取出ApkFileName=" + apkFileName)
 		fmt.Printf("取出appsInfo[0]= %+v", appsInfo[0])
 
 		// 看APK檔案存不存在
-		result = paths.IsFileNotExisted(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + labelName + "/" + apkFileName)
+		result = paths.IsFileNotExisted(paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + packageName + "/" + apkFileName)
 		// path := paths.AppendSlashIfNotEndWithOne(configurations.GetConfigValueOrPanic(`local`, `path`)) + "相簿/" + apkFileName
 		// result = paths.IsFileNotExisted(path)
 		// fmt.Println("path=", path)

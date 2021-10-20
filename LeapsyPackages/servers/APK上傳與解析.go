@@ -147,8 +147,9 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 		return
 	}
 
-	// 查找是否已建檔
-	result := mongoDB.FindAppsInfoByLabelName(labelName)
+	// 查找是否已建檔(key:packageName)
+	result := mongoDB.FindAppsInfoByPackageName(packageName)
+	//result := mongoDB.FindAppsInfoByLabelName(labelName)
 
 	// 若沒建檔，則先建檔
 	if 1 > len(result) {
@@ -203,8 +204,8 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 		}
 	}
 
-	// 確認apk儲存資料夾下是否存在名稱為「labelName」的資料夾
-	apkPath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
+	// 確認apk儲存資料夾下是否存在名稱為「packageName」的資料夾
+	apkPath := configurations.GetConfigValueOrPanic(`local`, `path`) + packageName + "/"
 	// apkPath := "apk/" + labelName + "/"
 
 	isFileExist, err := isExists(apkPath)
@@ -222,11 +223,11 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 
 	}
 
-	// 「labelName」的資料夾若不存，則建立「labelName」資料夾
+	// 「packageName」的資料夾若不存，則建立「packageName」資料夾
 	if !isFileExist {
 
 		//創建目錄
-		err = os.Mkdir(configurations.GetConfigValueOrPanic(`local`, `path`)+labelName, os.ModePerm)
+		err = os.Mkdir(configurations.GetConfigValueOrPanic(`local`, `path`)+packageName, os.ModePerm)
 
 		if err != nil {
 			s := fmt.Sprintf("[錯誤]創建名為Lable的資料夾時發生錯誤，錯誤訊息如下，Error： %s。", err.Error())
@@ -284,8 +285,8 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 	}
 
 	// 存檔：命名為 label + V_ + versionName
-	apkName := labelName + "_v" + versionName + ".apk"
-	savePath := configurations.GetConfigValueOrPanic(`local`, `path`) + labelName + "/"
+	apkName := packageName + "_v" + versionName + ".apk"
+	savePath := configurations.GetConfigValueOrPanic(`local`, `path`) + packageName + "/"
 	err, msg = saveFileToPath(file, savePath, apkName)
 
 	if nil != err {
@@ -340,10 +341,10 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 	// 將解析後的資訊，全部更新到對應app的appsinfo中
 	results := mongoDB.FindOneAndUpdateAppsInfoSET(
 		bson.M{
-			"labelname": labelName,
+			"packagename": packageName,
 		},
 		bson.M{
-			"packagename":       packageName,
+			"labelname":         labelName,
 			"lastversioncode":   versionCode,
 			"lastversionname":   versionName,
 			"apkfilename":       apkName,
@@ -351,9 +352,8 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 		})
 
 	// Response Client
-
+	// 查無結果
 	if 1 > len(results) {
-		//查無結果
 		s := "[錯誤]資料庫查不到您上傳的APK建檔資料"
 
 		// log
@@ -376,8 +376,59 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 		return
 	}
 
-	//有查到結果
+	// 有查到結果
 	s := "[您已完成APK檔案上傳,並於資料庫建檔或更新資料]"
+
+	// 將結所有果轉存成客戶端使用的json欄位（有大小寫）
+	var resultResponse []AppsInfoWithDownloadPath
+
+	if 0 < len(results) {
+		for _, r := range results {
+			tempObject := AppsInfoWithDownloadPath{
+				AppNameCht: r.AppNameCht,
+				AppNameChs: r.AppNameChs,
+				AppNameEng: r.AppNameEng,
+				AppNameJpn: r.AppNameJpn,
+				AppNameKor: r.AppNameKor,
+
+				LabelName:       r.LabelName,
+				LastVersionCode: r.LastVersionCode,
+				LastVersionName: r.LastVersionName,
+				PackageName:     r.PackageName,
+				PublishDate:     r.PublishDate,
+
+				ChangeDetailCht: r.ChangeDetailCht,
+				ChangeDetailChs: r.ChangeDetailChs,
+				ChangeDetailEng: r.ChangeDetailEng,
+				ChangeDetailJpn: r.ChangeDetailJpn,
+				ChangeDetailKor: r.ChangeDetailKor,
+
+				ChangeBriefCht: r.ChangeBriefCht,
+				ChangeBriefChs: r.ChangeBriefChs,
+				ChangeBriefEng: r.ChangeBriefEng,
+				ChangeBriefJpn: r.ChangeBriefJpn,
+				ChangeBriefKor: r.ChangeBriefKor,
+			}
+
+			//一筆筆加入到resultResponse中
+			resultResponse = append(resultResponse, tempObject)
+		}
+	}
+
+	// 組出下載網址
+	apkDownloadHost := apiServer.GetConfigValueOrPanic(`apkDownloadHost`)
+	apkDownloadPort := apiServer.GetConfigValueOrPanic(`port`) //下載APK port與API port一樣
+	apkDownloadURLBase := apiServer.GetConfigValueOrPanic(`apkDownloadURLBase`)
+
+	for i, _ := range resultResponse {
+
+		// 為每個結果，組出各APK的「下載網址」
+		// downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].LabelName //downloadPath
+		downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].PackageName //downloadPath
+		resultResponse[i].DownloadPath = downloadPath                                                                    //寫回array
+
+		fmt.Printf("組出downloadPath= %s \n", downloadPath)
+	}
 
 	// log
 	logings.SendLog(
@@ -392,7 +443,7 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 	ginContextPointer.JSON(http.StatusOK, gin.H{
 		"issuccess": issuccess,
 		"message":   message,
-		"appsinfo":  results[0],
+		"appsinfo":  resultResponse[0],
 	})
 
 	return
