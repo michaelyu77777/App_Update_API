@@ -2,6 +2,7 @@ package servers
 
 import (
 	"fmt"
+	"html"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -49,6 +50,12 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 
 	// 收檔案、表頭
 	file, header, err := ginContextPointer.Request.FormFile("file")
+
+	// 取得上傳APK的註解
+	note := ginContextPointer.PostForm("note")
+	fmt.Printf("取得note= %s \n", note)
+	fmt.Printf("轉譯note= %s \n", html.UnescapeString(note))
+
 	message := ""
 
 	if nil != err {
