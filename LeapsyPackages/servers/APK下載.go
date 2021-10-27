@@ -55,6 +55,7 @@ func getAPPsAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
 		// parametersLabelName := parameters.LabelName
 		parametersPackageName := parameters.PackageName
 
+		fmt.Println("下載APK：取得parametersPackageName", parametersPackageName)
 		// go func() {
 
 		// 	isError = !isLowerCaseOrDigit(parametersDownladKeyword)

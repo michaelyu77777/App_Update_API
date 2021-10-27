@@ -196,8 +196,8 @@ func postAllAppsInfoAPIHandler(apiServer *APIServer, ginContextPointer *gin.Cont
 			for i, _ := range resultWithDownloadPath {
 
 				// 為每個結果，組出各APK的「下載網址」
-				downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].LabelName //downloadPath
-				resultWithDownloadPath[i].DownloadPath = downloadPath                                                          //寫回array
+				downloadPath := "http://" + apkDownloadHost + ":" + apkDownloadPort + apkDownloadURLBase + result[i].PackageName //downloadPath
+				resultWithDownloadPath[i].DownloadPath = downloadPath                                                            //寫回array
 
 				fmt.Printf("組出downloadPath= %s", downloadPath)
 			}
