@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"reflect"
@@ -196,7 +197,9 @@ type Parameters struct {
 	// MacAddress string `uri:"macAddress"`
 	// DownloadKeyword string `uri:"downloadKeyword"`
 	// LabelName string `uri:"labelName"`
-	PackageName string `uri:"packageName"`
+	PackageName string                `form:"packageName" json:"packageName"` // 上傳APK檔案的PackageName
+	Note        string                `form:"note" json:"note"`               // 上傳APK檔案的註解說明
+	FileHeader  *multipart.FileHeader `form:"fileHeader" json:"fileHeader"`   // 上傳APK檔案的Header
 }
 
 // // APIResponse - API回應

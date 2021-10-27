@@ -26,7 +26,7 @@ import (
  * @param  ginContextPointer *gin.Context  gin Context 指標
  */
 // func uploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
-func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issuccess bool) {
+func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issuccess bool, packageName string) {
 
 	// For logings
 	defaultArgs :=
@@ -132,6 +132,8 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 
 	// 解析暫存APK
 	err, msg, packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+
+	//packageName = myPackageName
 
 	if nil != err {
 		s := fmt.Sprintf("[錯誤]解析APK時發生錯誤，錯誤訊息如下，Error：%s，Msg：%s。", err.Error(), msg)
@@ -473,8 +475,10 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 
 	httpStatusChannel := make(chan int, 1)
 
-	// var parameters Parameters
-	_, header, fileError := ginContextPointer.Request.FormFile("file")
+	var parameters Parameters
+	_, fileHeader, fileError := ginContextPointer.Request.FormFile("file")
+	parameters.FileHeader = fileHeader                                        //取出上傳APK Header
+	parameters.Note = html.UnescapeString(ginContextPointer.PostForm("note")) // 取出註解並轉譯note成繁體中文
 
 	// bindError := ginContextPointer.ShouldBind(&parameters)
 
@@ -482,6 +486,8 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 
 	isError := nil != fileError
 	isStatusBadRequestErrorChannel <- isError
+
+	packageNameChannel := make(chan string, 1)
 
 	if !isError {
 
@@ -520,10 +526,16 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 			// if isToWork {
 
 			// if upsertCybLicenseBin(ginContextPointer, parametersMacAddress) {
-			if uploadSingleApk(apiServer, ginContextPointer) {
-				httpStatusChannel <- http.StatusNoContent
+			// 待改寫uploadSingleApk回傳 PackageName
+			if isSuccess, myPackageName := uploadSingleApk(apiServer, ginContextPointer); isSuccess {
+
+				httpStatusChannel <- http.StatusNoContent //成功
+
+				for {
+					packageNameChannel <- myPackageName // 待改寫成接收 PackageName
+				}
 			} else {
-				httpStatusChannel <- http.StatusInternalServerError
+				httpStatusChannel <- http.StatusInternalServerError //失敗
 			}
 
 			// }
@@ -560,10 +572,14 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 
 		httpStatus := <-httpStatusChannel
 
+		if httpStatus == http.StatusNoContent {
+			parameters.PackageName = <-packageNameChannel
+		}
+
 		SendEvent(
 			eventTime,
 			ginContextPointer,
-			header, //上傳檔案的header
+			parameters,
 			nil,
 			httpStatus,
 			APIResponse{},
