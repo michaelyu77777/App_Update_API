@@ -198,6 +198,9 @@ type Parameters struct {
 	// DownloadKeyword string `uri:"downloadKeyword"`
 	// LabelName string `uri:"labelName"`
 	PackageName string                `form:"packageName" json:"packageName"` // 上傳APK檔案的PackageName
+	VersionCode int                   `form:"versionCode" json:"versionCode"` // 上傳APK檔案的VersionCode
+	VersionName string                `form:"versionName" json:"versionName"` // 上傳APK檔案的PackageName
+	LabelName   string                `form:"labelName" json:"labelName"`     // 上傳APK檔案的PackageName
 	Note        string                `form:"note" json:"note"`               // 上傳APK檔案的註解說明
 	FileHeader  *multipart.FileHeader `form:"fileHeader" json:"fileHeader"`   // 上傳APK檔案的Header
 }

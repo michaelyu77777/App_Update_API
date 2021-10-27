@@ -26,7 +26,7 @@ import (
  * @param  ginContextPointer *gin.Context  gin Context 指標
  */
 // func uploadSingleApkAPIHandler(apiServer *APIServer, ginContextPointer *gin.Context) {
-func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issuccess bool, packageName string) {
+func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issuccess bool, packageName string, versionCode int, versionName string, labelName string) {
 
 	// For logings
 	defaultArgs :=
@@ -131,7 +131,7 @@ func uploadSingleApk(apiServer *APIServer, ginContextPointer *gin.Context) (issu
 	}
 
 	// 解析暫存APK
-	err, msg, packageName, labelName, versionCode, versionName := getApkDetailsInApkTempDirectory(tempFileName)
+	err, msg, packageName, labelName, versionCode, versionName = getApkDetailsInApkTempDirectory(tempFileName)
 
 	//packageName = myPackageName
 
@@ -488,6 +488,9 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 	isStatusBadRequestErrorChannel <- isError
 
 	packageNameChannel := make(chan string, 1)
+	versionCodeChannel := make(chan int, 1)
+	versionNameChannel := make(chan string, 1)
+	labelNameChannel := make(chan string, 1)
 
 	if !isError {
 
@@ -527,12 +530,15 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 
 			// if upsertCybLicenseBin(ginContextPointer, parametersMacAddress) {
 			// 待改寫uploadSingleApk回傳 PackageName
-			if isSuccess, myPackageName := uploadSingleApk(apiServer, ginContextPointer); isSuccess {
+			if isSuccess, myPackageName, versionCode, versionName, labelName := uploadSingleApk(apiServer, ginContextPointer); isSuccess {
 
 				httpStatusChannel <- http.StatusNoContent //成功
 
 				for {
 					packageNameChannel <- myPackageName // 待改寫成接收 PackageName
+					versionCodeChannel <- versionCode
+					versionNameChannel <- versionName
+					labelNameChannel <- labelName
 				}
 			} else {
 				httpStatusChannel <- http.StatusInternalServerError //失敗
@@ -574,6 +580,9 @@ func postSingleApkFileAPIHandler(apiServer *APIServer, ginContextPointer *gin.Co
 
 		if httpStatus == http.StatusNoContent {
 			parameters.PackageName = <-packageNameChannel
+			parameters.VersionCode = <-versionCodeChannel
+			parameters.VersionName = <-versionNameChannel
+			parameters.LabelName = <-labelNameChannel
 		}
 
 		SendEvent(
